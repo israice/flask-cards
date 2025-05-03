@@ -32,3 +32,5 @@ python run.py
 - added AB_create_5_new_card_ids.py
 - added AC_create_1_new_pack_id.py
 - added A_run.py and 3 files as list
+## v004
+- add user to system_db next to pack

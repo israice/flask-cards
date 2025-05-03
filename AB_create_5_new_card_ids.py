@@ -31,32 +31,12 @@ def read_existing_ids(filename, column_index, dialect):
         return existing
     with open(filename, newline='', encoding='utf-8') as f:
         reader = csv.reader(f, dialect)
-        headers = next(reader, None)
-        if headers is None or column_index >= len(headers):
-            raise IndexError(f"Column index {column_index} out of range")
+        next(reader, None)  # Skip first row if it's header or data
         for row in reader:
             if len(row) > column_index and row[column_index].strip():
-                # split by comma, strip spaces
                 parts = [p.strip() for p in row[column_index].split(',') if p.strip()]
                 existing.update(parts)
     return existing
-
-
-def ensure_header(filename, headers, dialect):
-    """Create file and write header if file is missing or empty."""
-    need_header = True
-    if os.path.exists(filename):
-        with open(filename, newline='', encoding='utf-8') as f:
-            try:
-                first = next(csv.reader(f, dialect))
-                if first:
-                    need_header = False
-            except StopIteration:
-                need_header = True
-    if need_header:
-        with open(filename, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f, dialect)
-            writer.writerow(headers)
 
 
 def generate_unique_ids(prefix, existing, count, start, end):
@@ -69,54 +49,49 @@ def generate_unique_ids(prefix, existing, count, start, end):
 
 
 def append_ids(filename, new_ids, column_index, dialect):
-    """Insert or append new IDs into existing rows or create new rows."""
-    with open(filename, newline='', encoding='utf-8') as f:
-        rows = list(csv.reader(f, dialect))
-    headers = rows[0]
-    data = rows[1:]
+    """Insert or append new IDs into existing rows or create new rows without extra commas."""
+    # Read all existing rows
+    if os.path.exists(filename):
+        with open(filename, newline='', encoding='utf-8') as f:
+            rows = list(csv.reader(f, dialect))
+    else:
+        rows = []
 
-    if column_index >= len(headers):
-        raise IndexError(f"Column index {column_index} out of range for headers")
-
+    # Append or insert new IDs
     for new_id in new_ids:
         placed = False
-        # 1) Try to find a cell starting with comma (previous delimiter)
-        for row in data:
-            cell = row[column_index]
-            if cell.startswith(','):
-                row[column_index] = f"{cell}{new_id}"
+        # Try to append to comma-starting cell
+        for row in rows:
+            if len(row) > column_index and row[column_index].startswith(','):
+                row[column_index] = f"{row[column_index]}{new_id}"
                 placed = True
                 break
         if placed:
             continue
-        # 2) Try to fill empty cells
-        for row in data:
+        # Try to fill empty cell
+        for row in rows:
+            if len(row) <= column_index:
+                # Extend row to needed length
+                row.extend([''] * (column_index + 1 - len(row)))
             if not row[column_index].strip():
                 row[column_index] = new_id
                 placed = True
                 break
-        # 3) If not placed, append new row
-        if not placed:
-            new_row = [''] * len(headers)
-            new_row[column_index] = new_id
-            data.append(new_row)
+        if placed:
+            continue
+        # Append new row
+        new_row = [''] * (column_index + 1)
+        new_row[column_index] = new_id
+        rows.append(new_row)
 
-    # Write back all rows
+    # Write rows back without creating extra columns
     with open(filename, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f, dialect)
-        writer.writerow(headers)
-        writer.writerows(data)
+        writer.writerows(rows)
 
 
 def main():
     dialect = detect_dialect(FILENAME)
-    headers = []
-    if os.path.exists(FILENAME):
-        with open(FILENAME, newline='', encoding='utf-8') as f:
-            headers = next(csv.reader(f, dialect), [])
-    if not headers or TARGET_COLUMN_INDEX >= len(headers):
-        headers = [f"Column_{i}" for i in range(TARGET_COLUMN_INDEX + 1)]
-    ensure_header(FILENAME, headers, dialect)
 
     try:
         existing = read_existing_ids(FILENAME, TARGET_COLUMN_INDEX, dialect)
@@ -125,8 +100,7 @@ def main():
         return
 
     try:
-        new_ids = generate_unique_ids(ID_PREFIX, existing, NUM_IDS_TO_ADD,
-                                      ID_RANGE_START, ID_RANGE_END)
+        new_ids = generate_unique_ids(ID_PREFIX, existing, NUM_IDS_TO_ADD, ID_RANGE_START, ID_RANGE_END)
     except ValueError as e:
         print(f"ERROR: {e}")
         return
@@ -135,6 +109,7 @@ def main():
         append_ids(FILENAME, new_ids, TARGET_COLUMN_INDEX, dialect)
     except Exception as e:
         print(f"ERROR: {e}")
+
 
 if __name__ == '__main__':
     main()

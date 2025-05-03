@@ -7,6 +7,7 @@ scripts = [
     "AA_compaire_csv_files.py",
     "AB_create_5_new_card_ids.py",
     "AC_create_1_new_pack_id.py",
+    "AD_add_user_mail_to_pack.py",
 ]
 
 for script_path in scripts:
