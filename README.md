@@ -33,13 +33,13 @@ python run.py
 ## v008
 - create csv with CARD_AUTH keys
 - change all existing sripts paths to .env
-- 
-
+- create .env_EXAMPLE
+## v009
 
 
 ---
 
 ## Quick github update
 git add .
-git commit -m "change all existing sripts paths to .env"
+git commit -m "create .env_EXAMPLE"
 git push
