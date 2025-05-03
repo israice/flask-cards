@@ -8,7 +8,7 @@
 # setup step by step
 - download project
 - rename
-    - users_mails_EXAMPLE.csv 
+    - auth_users_EXAMPLE.csv 
     - .env_EXAMPLE
         - fill up the .env
 
@@ -23,8 +23,12 @@ python run.py
 - upload to github
 ## v002
 - translate all code comments to english 
-- SSE strwam users_mails.csv to templates\table.html
+- SSE strwam data/auth_users.csv to templates\table.html
 - adding Navbar with buttons
-- allow table button only to admins from admin_mails.csv 
+- allow table button only to admins from system_admin.csv 
 ## v003
 - move all csv files to /data/ and update paths
+- added AA_compaire_csv_files.py
+- added AB_create_5_new_card_ids.py
+- added AC_create_1_new_pack_id.py
+- added A_run.py and 3 files as list

@@ -25,7 +25,6 @@
                 <thead class="table-light">
                     <tr>
                         <th>Email</th>
-                        <th>Name</th>
                     </tr>
                 </thead>
                 <tbody id="user-table-body">
@@ -44,7 +43,6 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${user.email}</td>
-                    <td>${user.name}</td>
                 `;
                 tableBody.appendChild(row);
             });

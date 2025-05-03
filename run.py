@@ -3,9 +3,9 @@ from authlib.integrations.flask_client import OAuth
 import os
 from dotenv import load_dotenv
 import pandas as pd
-import logging
 import json
 import time
+import logging
 
 # ─── CONFIGURATION ──────────────────────────────────────────────────────────────
 load_dotenv()
@@ -13,12 +13,16 @@ load_dotenv()
 APP_SECRET = os.getenv('SESSION_SECRET')
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
-CSV_PATH = os.getenv('CSV_PATH', 'users_mails.csv')
-ADMIN_CSV_PATH = 'data/admin_mails.csv'
+CSV_PATH = os.getenv('CSV_PATH', 'data/auth_users.csv')
+ADMIN_CSV_PATH = 'data/system_admin.csv'
 PORT = int(os.getenv('PORT', 5000))
 
 if not APP_SECRET:
-    raise ValueError("SESSION_SECRET must be set in .env")
+    raise SystemExit("SESSION_SECRET must be set in .env")
+
+# ─── SUPPRESS FLASK AND WERKZEUG LOGS ───────────────────────────────────────────
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.CRITICAL)
 
 # ─── FLASK & OAUTH SETUP ────────────────────────────────────────────────────────
 app = Flask(__name__)
@@ -33,19 +37,16 @@ google = oauth.register(
     client_kwargs={'scope': 'openid email profile'}
 )
 
-# ─── LOGGING ────────────────────────────────────────────────────────────────────
-logging.getLogger('waitress').setLevel(logging.ERROR)
-
 # ─── HELPER FUNCTIONS ───────────────────────────────────────────────────────────
 def load_users():
     if os.path.exists(CSV_PATH):
         return pd.read_csv(CSV_PATH)
-    return pd.DataFrame(columns=['email', 'name'])
+    return pd.DataFrame(columns=['email'])
 
-def save_user(email, name):
+def save_user(email):
     users = load_users()
     if email not in users['email'].values:
-        users = pd.concat([users, pd.DataFrame({'email': [email], 'name': [name]})], ignore_index=True)
+        users = pd.concat([users, pd.DataFrame({'email': [email]})], ignore_index=True)
         users.to_csv(CSV_PATH, index=False)
 
 def load_admin_emails():
@@ -73,21 +74,18 @@ def authorize():
         token = google.authorize_access_token()
         user_info = token.get('userinfo')
         if user_info:
-            email, name = user_info.get('email'), user_info.get('name')
-            print(f"User authenticated: {email}, {name}")
-            save_user(email, name)
-            session['user'] = {'email': email, 'name': name}
+            email = user_info.get('email')
+            save_user(email)
+            session['user'] = {'email': email}
             return redirect(url_for('profile'))
-        print("No user info received from Google")
-    except Exception as e:
-        print(f"Error in authorize: {str(e)}")
-    return "Authorization failed. Please try again."
+    except Exception:
+        pass
+    return '', 204
 
 @app.route('/profile')
 def profile():
     user = session.get('user')
     if not user:
-        print("No user in session, redirecting to login")
         return redirect(url_for('login'))
     
     admin_emails = load_admin_emails()
@@ -100,13 +98,11 @@ def profile():
 def table():
     user = session.get('user')
     if not user:
-        print("No user in session, redirecting to login")
         return redirect(url_for('login'))
     
     admin_emails = load_admin_emails()
     user_email = user['email'].strip().lower()
     if user_email not in admin_emails:
-        print("User is not admin, redirecting to profile")
         return redirect(url_for('profile'))
     
     return render_template('table.html', user=user)
@@ -137,5 +133,4 @@ def logout():
 # ─── ENTRY POINT ────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     print(f"- - http://localhost:{PORT}")
-    from waitress import serve
-    serve(app, host='0.0.0.0', port=PORT)
+    app.run(host='0.0.0.0', port=PORT, debug=False, use_reloader=False)
