@@ -28,13 +28,15 @@ python run.py
 ## v006
 - move all paths to .env and fix project paths
 - redesighn login.html
+## v007
 - create add_card_owner.html
--  
+## v008
+- 
 
 
 ---
 
 ## Quick github update
 git add .
-git commit -m "redesighn login.html"
+git commit -m "create add_card_owner.html"
 git push
