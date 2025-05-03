@@ -1,18 +1,4 @@
-# about project
-- the basic auth using google
-    - html page for login
-    - html page for profile after you enter
-
----
-
-# setup step by step
-- download project
-- rename
-    - auth_users_EXAMPLE.csv 
-    - .env_EXAMPLE
-        - fill up the .env
-
-# run
+## run
 python run.py
 
 ---
@@ -39,3 +25,16 @@ python run.py
 - create list of scripts for C_run_card_ownership.py
 ## v005
 - create /core/ and fix paths for all files
+## v006
+- move all paths to .env and fix project paths
+- redesighn login.html
+- create add_card_owner.html
+-  
+
+
+---
+
+## Quick github update
+git add .
+git commit -m "redesighn login.html"
+git push

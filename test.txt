@@ -1,37 +1,8 @@
-создай скрипт на py
-который в файле 
-data\system_cards.csv
-
-добовляет значение SYSTEM
-в второй индекс столбцов
-где заголовок OWNER
-
-цель заполнить те строки которые без значения 
-например если в файле 
-
-PACK_ID,CARD_ID,OWNER
-Card_096844,Pack_667389,israskills@gmail.com
-Card_468192,Pack_667389,israskills@gmail.com
-Card_091309,Pack_667389,israskills@gmail.com
-Card_120065,Pack_667389,israskills@gmail.com
-Card_653142,Pack_667389,israskills@gmail.com
-Card_905575,Pack_695003
-Card_564453,Pack_695003
-Card_552935,Pack_695003
-Card_427663,Pack_695003
-Card_416687,Pack_695003
 
 
-то должно получиться
 
-PACK_ID,CARD_ID,OWNER
-Card_096844,Pack_667389,israskills@gmail.com
-Card_468192,Pack_667389,israskills@gmail.com
-Card_091309,Pack_667389,israskills@gmail.com
-Card_120065,Pack_667389,israskills@gmail.com
-Card_653142,Pack_667389,israskills@gmail.com
-Card_905575,Pack_695003,SYSTEM
-Card_564453,Pack_695003,SYSTEM
-Card_552935,Pack_695003,SYSTEM
-Card_427663,Pack_695003,SYSTEM
-Card_416687,Pack_695003,SYSTEM
+создай стрицу html на основе bootstrap
+на странице должно быть поле ввода мейла 
+а так же кнопка ок
+
+позже пропишем логику для кнопки
