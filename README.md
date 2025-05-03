@@ -34,3 +34,8 @@ python run.py
 - added A_run.py and 3 files as list
 ## v004
 - add user to system_db next to pack
+- create list of scripts for A_run_create_packs.py
+- create list of scripts for B_run_send_packs_to_store.py
+- create list of scripts for C_run_card_ownership.py
+## v005
+- create /core/ and fix paths for all files

@@ -1,13 +1,13 @@
+<!-- templates/table.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>User Table Live</title>
+    <title>Live Table</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Navbar with buttons -->
     <nav class="navbar navbar-light bg-white shadow-sm">
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <a class="navbar-brand" href="#">MyApp</a>
@@ -19,47 +19,57 @@
     </nav>
 
     <div class="container-fluid mt-4">
-        <h2 class="mb-3">Live User List</h2>
+        <h2 class="mb-3">Live Data Table</h2>
         <div class="table-responsive">
             <table class="table table-bordered table-striped">
-                <thead class="table-light">
-                    <tr>
-                        <th>Email</th>
-                    </tr>
-                </thead>
-                <tbody id="user-table-body">
-                    <!-- Rows will be inserted here -->
-                </tbody>
+                <thead class="table-light" id="table-header"></thead>
+                <tbody id="table-body"></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        const tableBody = document.getElementById('user-table-body');
+        const headerEl = document.getElementById('table-header');
+        const bodyEl = document.getElementById('table-body');
 
-        function renderTable(users) {
-            tableBody.innerHTML = '';
-            users.forEach(user => {
+        function renderTable(payload) {
+            const { columns, records } = payload;
+            headerEl.innerHTML = '';
+            bodyEl.innerHTML = '';
+            if (records.length === 0) return;
+
+            // build header in original CSV order
+            const headerRow = document.createElement('tr');
+            columns.forEach(col => {
+                const th = document.createElement('th');
+                th.textContent = col;
+                headerRow.appendChild(th);
+            });
+            headerEl.appendChild(headerRow);
+
+            // build rows in same order
+            records.forEach(item => {
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${user.email}</td>
-                `;
-                tableBody.appendChild(row);
+                columns.forEach(col => {
+                    const td = document.createElement('td');
+                    td.textContent = item[col];
+                    row.appendChild(td);
+                });
+                bodyEl.appendChild(row);
             });
         }
 
-        const evtSource = new EventSource('/stream');
-        evtSource.onmessage = function(event) {
-            const users = JSON.parse(event.data);
-            renderTable(users);
-        };
-
-        // Initial load
+        // initial load
         fetch('/get_users')
-            .then(response => response.json())
-            .then(data => renderTable(data.users));
-    </script>
+            .then(res => res.json())
+            .then(data => renderTable(data));
 
+        // live updates
+        const evtSource = new EventSource('/stream');
+        evtSource.onmessage = e => {
+            renderTable(JSON.parse(e.data));
+        };
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

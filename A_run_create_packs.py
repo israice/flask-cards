@@ -4,10 +4,9 @@ import importlib
 
 # List of script paths (relative or absolute)
 scripts = [
-    "AA_compaire_csv_files.py",
-    "AB_create_5_new_card_ids.py",
-    "AC_create_1_new_pack_id.py",
-    "AD_add_user_mail_to_pack.py",
+    "AA_create_5_new_card_ids.py",
+    "AB_create_1_new_pack_id.py",
+    "AC_add_system_as_pack_owner.py",
 ]
 
 for script_path in scripts:
@@ -15,7 +14,7 @@ for script_path in scripts:
         # Split path and filename
         dir_path = os.path.dirname(script_path)
         filename = os.path.basename(script_path)
-        module_name = os.path.splitext(filename)[0]  # remove '.py'
+        module_name = os.path.splitext(filename)[0] 
 
         # Add directory to sys.path if not already present
         abs_dir_path = os.path.abspath(dir_path)

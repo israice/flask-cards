@@ -1,3 +1,7 @@
+# run.py
+import sys
+sys.dont_write_bytecode = True  # disable writing .pyc files into __pycache__
+
 from flask import Flask, render_template, redirect, url_for, session, jsonify, Response
 from authlib.integrations.flask_client import OAuth
 import os
@@ -13,7 +17,7 @@ load_dotenv()
 APP_SECRET = os.getenv('SESSION_SECRET')
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
-CSV_PATH = os.getenv('CSV_PATH', 'data/auth_users.csv')
+CSV_PATH = 'data/system_cards.csv'
 ADMIN_CSV_PATH = 'data/system_admin.csv'
 PORT = int(os.getenv('PORT', 5000))
 
@@ -39,13 +43,14 @@ google = oauth.register(
 
 # ─── HELPER FUNCTIONS ───────────────────────────────────────────────────────────
 def load_users():
+    """Load CSV into DataFrame, return empty if missing."""
     if os.path.exists(CSV_PATH):
         return pd.read_csv(CSV_PATH)
-    return pd.DataFrame(columns=['email'])
+    return pd.DataFrame()
 
 def save_user(email):
     users = load_users()
-    if email not in users['email'].values:
+    if 'email' in users.columns and email not in users['email'].values:
         users = pd.concat([users, pd.DataFrame({'email': [email]})], ignore_index=True)
         users.to_csv(CSV_PATH, index=False)
 
@@ -107,21 +112,29 @@ def table():
     
     return render_template('table.html', user=user)
 
+# ─── UPDATED: return both columns order and records ────────────────────────────
 @app.route('/get_users')
 def get_users():
-    users = load_users()
-    return jsonify({'users': users.to_dict(orient='records')})
+    df = load_users()
+    cols = df.columns.tolist()
+    records = df.to_dict(orient='records')
+    return jsonify({'columns': cols, 'records': records})
 
 @app.route('/stream')
 def stream():
     def event_stream():
         last_mtime = 0
         while True:
-            current_mtime = os.path.getmtime(CSV_PATH)
-            if current_mtime != last_mtime:
-                last_mtime = current_mtime
-                users = load_users().to_dict(orient='records')
-                yield f"data: {json.dumps(users)}\n\n"
+            if os.path.exists(CSV_PATH):
+                current_mtime = os.path.getmtime(CSV_PATH)
+                if current_mtime != last_mtime:
+                    last_mtime = current_mtime
+                    df = load_users()
+                    payload = {
+                        'columns': df.columns.tolist(),
+                        'records': df.to_dict(orient='records')
+                    }
+                    yield f"data: {json.dumps(payload)}\n\n"
             time.sleep(1)
     return Response(event_stream(), mimetype='text/event-stream')
 
