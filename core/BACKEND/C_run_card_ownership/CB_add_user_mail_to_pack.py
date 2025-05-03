@@ -2,20 +2,26 @@
 import csv
 import os
 import sys
+from dotenv import load_dotenv
 
-# ==== SETTINGS ====  
-DB_FILENAME    = 'data/system_db.csv'         # Source CSV for cutting the value  
-CARDS_FILENAME = 'data/system_cards.csv'      # Target CSV to update  
-READ_COL_NAME  = 'email'                      # Column name in DB_FILENAME to read & remove  
-WRITE_COL_NAME = 'OWNER'                      # Column name in CARDS_FILENAME to write  
-FILL_COUNT     = 5                            # How many rows to fill in target  
+# ==== LOAD ENVIRONMENT ====
+load_dotenv()
+DB_FILENAME    = os.getenv('SYSTEM_DB_CSV')        # Source CSV from .env
+CARDS_FILENAME = os.getenv('SYSTEM_CARDS_CSV')     # Target CSV from .env
+# ===========================
+
+# ==== SETTINGS ====
+READ_COL_NAME  = 'email'      # Column name in DB_FILENAME to read & remove
+WRITE_COL_NAME = 'OWNER'      # Column name in CARDS_FILENAME to write
+FILL_COUNT     = 5            # How many rows to fill in target
 # ===================
 
 def cut_first_db_value(filename, col_name):
     """
     Read and remove the first data-row value from column `col_name` in a comma-separated CSV.
+    Always skips the header and never reads index 0.
     Returns the stripped value, or None if missing/empty.
-    Writes the file back without that row, preserving header order.
+    Writes the file back without that data row, preserving header.
     """
     if not os.path.exists(filename):
         print(f"Error: DB file '{filename}' not found.", file=sys.stderr)
@@ -27,16 +33,18 @@ def cut_first_db_value(filename, col_name):
         rows = list(reader)
 
     if not rows:
+        print(f"Error: No data rows in '{filename}'.", file=sys.stderr)
         return None
 
-    first = rows.pop(0)
-    raw = first.get(col_name)
+    # Pop the first real data row (index 0 in `rows` list, after header)
+    first_data_row = rows.pop(0)
+    raw = first_data_row.get(col_name)
     if raw is None or not raw.strip():
-        print(f"Error: Column '{col_name}' missing or empty in first row of DB.", file=sys.stderr)
+        print(f"Error: Column '{col_name}' missing or empty in first data row of DB.", file=sys.stderr)
         return None
     value = raw.strip()
 
-    # Write back DB without the first data row
+    # Write back DB without the popped data row
     with open(filename, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()
@@ -59,7 +67,7 @@ def fill_column_with_value(filename, value, col_name, count):
         fieldnames = reader.fieldnames or []
         rows = list(reader)
 
-    # If target column not in header, add it at the end and initialize
+    # If target column not in header, add it and initialize for all rows
     if col_name not in fieldnames:
         fieldnames.append(col_name)
         for row in rows:
@@ -81,7 +89,7 @@ def fill_column_with_value(filename, value, col_name, count):
         writer.writeheader()
         writer.writerows(rows)
 
-    # After writing, scan for any empty OWNER cells
+    # After writing, check for any empty OWNER cells
     errors_found = False
     for idx, row in enumerate(rows, start=2):  # start=2 to account for header line
         cell = row.get(col_name, '')
@@ -90,7 +98,7 @@ def fill_column_with_value(filename, value, col_name, count):
             errors_found = True
 
     if filled < count:
-        print(f"Warning: Only {filled} of {count} 'SYSTEM' entries were replaced (found fewer in file).", file=sys.stderr)
+        print(f"Warning: Only {filled} of {count} 'SYSTEM' entries were replaced (fewer found in file).", file=sys.stderr)
 
     if errors_found:
         print("Process completed with errors. Please fill missing OWNER values.", file=sys.stderr)

@@ -2,9 +2,17 @@
 import csv
 import random
 import os
+from dotenv import load_dotenv
+
+# ==== LOAD ENVIRONMENT VARIABLES ====
+load_dotenv()
+FILENAME = os.getenv('SYSTEM_CARDS_CSV')
+
+if not FILENAME:
+    print("ERROR: SYSTEM_CARDS_CSV is not set in the .env file.")
+    exit(1)
 
 # ==== SETTINGS ====
-FILENAME = 'data/system_cards.csv'
 TARGET_COLUMN_INDEX = 1          # Zero-based index for 'CARD_ID'
 NUM_IDS_TO_ADD = 1               # number of unique IDs to generate
 ID_REPEAT_COUNT = 5              # number of times to repeat each generated ID vertically
@@ -25,7 +33,6 @@ def read_existing_ids(filename, column_index, dialect):
                 existing.add(row[column_index].strip())
     return existing
 
-
 def generate_unique_ids(prefix, existing, count, start, end):
     """Generate a list of unique IDs not in existing set."""
     all_ids = {f"{prefix}{i:06d}" for i in range(start, end + 1)}
@@ -33,7 +40,6 @@ def generate_unique_ids(prefix, existing, count, start, end):
     if len(available) < count:
         raise ValueError(f"Not enough unique IDs (needed {count}, available {len(available)})")
     return random.sample(available, count)
-
 
 def append_ids(filename, new_ids, column_index, dialect):
     """Insert new IDs vertically: each in its own row under the target column, preserving existing structure."""
@@ -63,7 +69,6 @@ def append_ids(filename, new_ids, column_index, dialect):
             writer.writerow(headers)
         writer.writerows(data)
 
-
 def main():
     dialect = csv.get_dialect('excel')
 
@@ -86,7 +91,6 @@ def main():
         append_ids(FILENAME, unique_ids, TARGET_COLUMN_INDEX, dialect)
     except Exception as e:
         print(f"ERROR: {e}")
-
 
 if __name__ == '__main__':
     main()

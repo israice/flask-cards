@@ -1,12 +1,19 @@
 import os
 import base64
 import csv
+from dotenv import load_dotenv
+
+# === LOAD ENVIRONMENT VARIABLES ===
+load_dotenv()  # load variables from .env
 
 # === SETTINGS ===
-output_dir = os.path.join('core', 'data')
-file_path = os.path.join(output_dir, 'system_card_auth.csv')
-num_pairs_to_add = 5  # количество пар ключей, которые будут добавлены за раз
-key_size = 32  # размер случайного ключа в байтах
+file_path = os.getenv('SYSTEM_CARD_AUTH_SCV')
+if not file_path:
+    raise ValueError("Environment variable SYSTEM_CARD_AUTH_SCV not found in .env")
+
+output_dir = os.path.dirname(file_path)
+num_pairs_to_add = 5  # number of key pairs to add at once
+key_size = 32  # size of the random key in bytes
 
 # === PREPARE OUTPUT DIRECTORY ===
 os.makedirs(output_dir, exist_ok=True)

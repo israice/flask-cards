@@ -1,12 +1,9 @@
 import sys
-sys.dont_write_bytecode = True  # disable writing .pyc files into __pycache__
-
 import os
 import importlib
 
 # List of script paths (relative or absolute)
 scripts = [
-    # -----------------
 ]
 
 for script_path in scripts:
@@ -14,12 +11,13 @@ for script_path in scripts:
         # Split path and filename
         dir_path = os.path.dirname(script_path)
         filename = os.path.basename(script_path)
-        module_name = os.path.splitext(filename)[0] 
+        module_name = os.path.splitext(filename)[0]  # remove '.py'
 
         # Add directory to sys.path if not already present
         abs_dir_path = os.path.abspath(dir_path)
         if abs_dir_path not in sys.path:
             sys.path.append(abs_dir_path)
+            print(f"Added {abs_dir_path} to sys.path")
 
         module = importlib.import_module(module_name)
 

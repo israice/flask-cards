@@ -2,9 +2,17 @@
 import csv
 import random
 import os
+from dotenv import load_dotenv
+
+# ==== LOAD ENVIRONMENT VARIABLES ====
+load_dotenv()
+FILENAME = os.getenv('SYSTEM_CARDS_CSV')
+
+if not FILENAME:
+    print("ERROR: SYSTEM_CARDS_CSV is not set in the .env file.")
+    exit(1)
 
 # ==== SETTINGS ====
-FILENAME = 'data/system_cards.csv'
 TARGET_COLUMN_INDEX = 0       # Zero-based index (0 = first column)
 NUM_IDS_TO_ADD = 5
 ID_PREFIX = 'Card_'
@@ -23,7 +31,6 @@ def detect_dialect(filename, sample_size=2048):
             dialect = csv.get_dialect('excel')
     return dialect
 
-
 def read_existing_ids(filename, column_index, dialect):
     """Read existing IDs from the CSV at the target column index."""
     existing = set()
@@ -38,7 +45,6 @@ def read_existing_ids(filename, column_index, dialect):
                 existing.update(parts)
     return existing
 
-
 def generate_unique_ids(prefix, existing, count, start, end):
     """Generate a list of unique IDs not in existing set."""
     all_ids = {f"{prefix}{i:06d}" for i in range(start, end + 1)}
@@ -46,7 +52,6 @@ def generate_unique_ids(prefix, existing, count, start, end):
     if len(available) < count:
         raise ValueError(f"Not enough unique IDs (needed {count}, available {len(available)})")
     return random.sample(available, count)
-
 
 def append_ids(filename, new_ids, column_index, dialect):
     """Insert or append new IDs into existing rows or create new rows without extra commas."""
@@ -89,7 +94,6 @@ def append_ids(filename, new_ids, column_index, dialect):
         writer = csv.writer(f, dialect)
         writer.writerows(rows)
 
-
 def main():
     dialect = detect_dialect(FILENAME)
 
@@ -109,7 +113,6 @@ def main():
         append_ids(FILENAME, new_ids, TARGET_COLUMN_INDEX, dialect)
     except Exception as e:
         print(f"ERROR: {e}")
-
 
 if __name__ == '__main__':
     main()

@@ -31,12 +31,15 @@ python run.py
 ## v007
 - create add_card_owner.html
 ## v008
+- create csv with CARD_AUTH keys
+- change all existing sripts paths to .env
 - 
+
 
 
 ---
 
 ## Quick github update
 git add .
-git commit -m "create add_card_owner.html"
+git commit -m "change all existing sripts paths to .env"
 git push

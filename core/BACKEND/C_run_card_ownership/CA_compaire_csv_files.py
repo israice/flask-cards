@@ -1,11 +1,16 @@
 # ================= SETTINGS =================
-mails_file = 'data/auth_users.csv'  # Path to auth_users.csv
-collection_file = 'data/system_db.csv'  # Path to system_db.csv
+import os
+from dotenv import load_dotenv
+import csv
+
+# Load environment variables from .env file
+load_dotenv()
+
+mails_file = os.getenv('AUTH_USERS')  # Path to auth_users.csv from .env
+collection_file = os.getenv('SYSTEM_DB_CSV')  # Path to system_db.csv from .env
 email_field_name = 'email'  # Name of the email column
 encoding = 'utf-8'  # File encoding
 # ============================================
-
-import csv
 
 # Read emails from auth_users.csv
 with open(mails_file, newline='', encoding=encoding) as f:

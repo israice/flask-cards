@@ -1,4 +1,6 @@
 import sys
+sys.dont_write_bytecode = True  # disable writing .pyc files into __pycache__
+
 import os
 import importlib
 
@@ -7,6 +9,7 @@ scripts = [
     "AA_create_5_new_card_ids.py",
     "AB_create_1_new_pack_id.py",
     "AC_add_system_as_pack_owner.py",
+    "AD_create_system_card_auth_keys.py",
 ]
 
 for script_path in scripts:
@@ -20,7 +23,6 @@ for script_path in scripts:
         abs_dir_path = os.path.abspath(dir_path)
         if abs_dir_path not in sys.path:
             sys.path.append(abs_dir_path)
-            print(f"Added {abs_dir_path} to sys.path")
 
         module = importlib.import_module(module_name)
 

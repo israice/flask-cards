@@ -3,9 +3,15 @@
 
 import csv
 import os
+from dotenv import load_dotenv
 
-# Define path to the CSV file
-input_path = os.path.join('data', 'system_cards.csv')
+# ==== LOAD ENVIRONMENT VARIABLES ====
+load_dotenv()
+input_path = os.getenv('SYSTEM_CARDS_CSV')
+
+if not input_path:
+    print("ERROR: SYSTEM_CARDS_CSV is not set in the .env file.")
+    exit(1)
 
 # Ensure data directory exists
 os.makedirs(os.path.dirname(input_path), exist_ok=True)
@@ -26,4 +32,3 @@ with open(input_path, 'w', newline='', encoding='utf-8') as outfile:
     writer = csv.DictWriter(outfile, fieldnames=fieldnames)
     writer.writeheader()
     writer.writerows(rows)
-
