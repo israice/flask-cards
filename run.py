@@ -1,7 +1,7 @@
 import sys
 sys.dont_write_bytecode = True  # disable writing .pyc files into __pycache__
 
-from flask import Flask, render_template, redirect, url_for, session, jsonify, Response
+from flask import Flask, render_template, redirect, url_for, session, jsonify, Response, abort, send_from_directory
 from authlib.integrations.flask_client import OAuth
 import os
 from dotenv import load_dotenv
@@ -9,6 +9,7 @@ import pandas as pd
 import json
 import time
 import logging
+import csv
 
 # ─── CONFIGURATION ──────────────────────────────────────────────────────────────
 load_dotenv()
@@ -23,10 +24,12 @@ GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 
 # Paths from .env
-AUTH_USERS = os.getenv('AUTH_USERS')           # CSV for authorized user emails
-SYSTEM_ADMIN_CSV = os.getenv('SYSTEM_ADMIN_CSV')  # CSV for admin emails
-SYSTEM_CARDS_CSV = os.getenv('SYSTEM_CARDS_CSV')  # CSV for system cards data (table.html)
+AUTH_USERS = os.getenv('AUTH_USERS')
+SYSTEM_ADMIN_CSV = os.getenv('SYSTEM_ADMIN_CSV')
+SYSTEM_CARDS_CSV = os.getenv('SYSTEM_CARDS_CSV')
 TEMPLATE_FOLDER = os.getenv('TEMPLATE_FOLDER')
+SYSTEM_CARD_AUTH_CSV = os.getenv('SYSTEM_CARD_AUTH_SCV')  # CSV for key-to-card mappings
+CARDS_FOLDER = os.getenv('CARDS_BANK_FOLDER')             # Folder for card images
 
 # Server port
 PORT = int(os.getenv('PORT', 5000))
@@ -37,7 +40,9 @@ required_envs = {
     'AUTH_USERS': AUTH_USERS,
     'SYSTEM_ADMIN_CSV': SYSTEM_ADMIN_CSV,
     'SYSTEM_CARDS_CSV': SYSTEM_CARDS_CSV,
-    'TEMPLATE_FOLDER': TEMPLATE_FOLDER
+    'TEMPLATE_FOLDER': TEMPLATE_FOLDER,
+    'SYSTEM_CARD_AUTH_SCV': SYSTEM_CARD_AUTH_CSV,
+    'CARDS_BANK_FOLDER': CARDS_FOLDER
 }
 for name, val in required_envs.items():
     if not val:
@@ -60,6 +65,16 @@ google = oauth.register(
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={'scope': 'openid email profile'}
 )
+
+# ─── LOAD MAPPINGS FROM CSV ─────────────────────────────────────────────────────
+KEY_TO_CARD_ID = {}
+try:
+    with open(SYSTEM_CARD_AUTH_CSV, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            KEY_TO_CARD_ID[row['KEY_IN']] = row['CARD_ID']
+except Exception as e:
+    logger.error(f"Failed to load key-to-card mappings from {SYSTEM_CARD_AUTH_CSV}: {e}")
 
 # ─── HELPER FUNCTIONS ───────────────────────────────────────────────────────────
 def load_users():
@@ -187,6 +202,37 @@ def stream():
                     yield f"data: {json.dumps(payload)}\n\n"
             time.sleep(1)
     return Response(event_stream(), mimetype='text/event-stream')
+
+@app.route('/card/<path:key>')
+def serve_card_page(key):
+    """Serve the card page for a given key if it exists."""
+    full_url = f'http://localhost:{PORT}/card/{key}'
+
+    if full_url in KEY_TO_CARD_ID:
+        card_id = KEY_TO_CARD_ID[full_url]
+
+        # Check for image with supported extensions
+        image_url = None
+        for ext in ['.png', '.jpg', '.jpeg']:
+            image_filename = card_id + ext
+            image_path = os.path.join(CARDS_FOLDER, image_filename)
+            if os.path.exists(image_path):
+                image_url = f'/card_image/{image_filename}'
+                break
+
+        return render_template('add_card_owner.html', image_url=image_url)
+    else:
+        abort(404)
+
+@app.route('/card_image/<filename>')
+def card_image(filename):
+    """Serve image files from the cards folder."""
+    return send_from_directory(CARDS_FOLDER, filename)
+
+@app.errorhandler(404)
+def page_not_found(e):
+    """Custom 404 error handler."""
+    return render_template('404.html'), 404
 
 @app.route('/logout')
 def logout():

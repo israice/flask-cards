@@ -43,6 +43,7 @@ python run.py
 - create AG_add_card_id_to_image_file_name.py
 ## v011
 - fix urls to show image id on html
+## v012
 
 
 
@@ -51,5 +52,5 @@ python run.py
 
 ## Quick github update
 git add .
-git commit -m "AG_add_card_id_to_image_file_name.py"
+git commit -m "fix urls to show image id on html"
 git push
