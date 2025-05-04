@@ -6,15 +6,17 @@ import sys
 import pandas as pd
 from dotenv import load_dotenv
 
-# === SETTINGS ===
+# === LOAD ENVIRONMENT VARIABLES ===
 ENV_FILE = '.env'
+load_dotenv(ENV_FILE)  # Load variables from .env before calling getenv
+
+# === SETTINGS ===
 CARDS_BANK_FOLDER = os.getenv('CARDS_BANK_FOLDER')            # Folder with card files
 SYSTEM_CARD_AUTH_SCV = os.getenv('SYSTEM_CARD_AUTH_SCV')      # Path to auth CSV
 CARD_ID_COL_INDEX = 2                                         # Index of CARD_ID column (0-based)
+PREFIX = 'Card_'                                              # Files with this prefix are skipped
 
 # === VALIDATE CONFIGURATION ===
-load_dotenv(ENV_FILE)
-
 if not CARDS_BANK_FOLDER:
     print('Error: CARDS_BANK_FOLDER not set in environment variables.', file=sys.stderr)
     sys.exit(1)
@@ -23,7 +25,7 @@ if not SYSTEM_CARD_AUTH_SCV:
     sys.exit(1)
 
 def main():
-    """Rename first non-prefixed file to next available CARD_ID based on column index."""
+    """Rename all non-prefixed files to next available CARD_IDs based on column index."""
     # Read CSV into DataFrame
     try:
         df = pd.read_csv(SYSTEM_CARD_AUTH_SCV, dtype=str)
@@ -51,31 +53,32 @@ def main():
         print(f"Error listing directory '{CARDS_BANK_FOLDER}': {e}", file=sys.stderr)
         sys.exit(1)
 
-    # Find first file without 'Card_' prefix
-    file_to_rename = next((f for f in files if not f.startswith('Card_')), None)
-    if not file_to_rename:
-        # Nothing to rename
-        return
-
-    # Determine existing base names to avoid collisions
+    # Track base names already in use to avoid collisions
     existing_bases = {os.path.splitext(f)[0] for f in files}
 
-    # Pick the first available CARD_ID not already used as a filename
-    new_id = next((cid for cid in card_ids if cid and cid not in existing_bases), None)
-    if not new_id:
-        print('No available CARD_ID found that is not already used.', file=sys.stderr)
-        return
+    # Iterate through all files without the prefix
+    for filename in sorted(files):
+        if filename.startswith(PREFIX):
+            continue
 
-    # Perform rename
-    old_path = os.path.join(CARDS_BANK_FOLDER, file_to_rename)
-    ext = os.path.splitext(file_to_rename)[1]
-    new_name = new_id + ext
-    new_path = os.path.join(CARDS_BANK_FOLDER, new_name)
+        # Determine next available CARD_ID not already used
+        new_id = next((cid for cid in card_ids if cid and cid not in existing_bases), None)
+        if not new_id:
+            break  # Or continue to try other files? here we stop since no IDs remain
 
-    try:
-        os.rename(old_path, new_path)
-    except Exception as e:
-        print(f"Error renaming file '{file_to_rename}' to '{new_name}': {e}", file=sys.stderr)
+        # Prepare new file name
+        old_path = os.path.join(CARDS_BANK_FOLDER, filename)
+        ext = os.path.splitext(filename)[1]
+        new_name = new_id + ext
+        new_path = os.path.join(CARDS_BANK_FOLDER, new_name)
+
+        # Perform rename
+        try:
+            os.rename(old_path, new_path)
+            # Mark this ID/base as used
+            existing_bases.add(new_id)
+        except Exception as e:
+            print(f"Error renaming '{filename}' to '{new_name}': {e}", file=sys.stderr)
 
 if __name__ == '__main__':
     main()

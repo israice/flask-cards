@@ -52,8 +52,16 @@ python run.py
 - create AH_create_qr_files.py
 - change all script to be based on calmns index
 ## v014
-- test all scripts step by step and fix steps 
-
+- test scripts one by one make sure they works
+- fix "create pack" flow
+- fix "create pack" > "system ownership"
+- fix "create pack" > "system ownership" > "create cards"
+- fix "create pack" > "system ownership" > "create cards" > "user ownership"
+## v015
+- create card stats csv
+- add stats to front card before flip
+- add button to change owner
+- add button to activate card
 
 
 ## load last updates and replace existing local files
@@ -67,5 +75,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "change all script to be based on calmns index"
+git commit -m "test scripts one by one make sure they works"
 git push

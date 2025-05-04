@@ -8,8 +8,11 @@ from dotenv import load_dotenv
 # ==== SETTINGS ====
 load_dotenv()  # Load environment variables from .env file
 INPUT_PATH = os.getenv('SYSTEM_CARDS_CSV')  # Path to the CSV file from .env
-OWNER_COLUMN_INDEX = 2  # Index of the column to treat as owner (0-based)
-DEFAULT_OWNER = 'SYSTEM'  # Default owner value for empty fields
+# Configurable column indexes
+PACK_COLUMN_INDEX = int(os.getenv('PACK_COLUMN_INDEX', '1'))   # Default PACK_ID column index
+OWNER_COLUMN_INDEX = int(os.getenv('OWNER_COLUMN_INDEX', '2')) # Default OWNER column index
+# Default owner for rows with PACK_ID but missing owner
+DEFAULT_OWNER = os.getenv('DEFAULT_OWNER', 'SYSTEM')
 
 if not INPUT_PATH:
     print("ERROR: SYSTEM_CARDS_CSV is not set in the .env file.")
@@ -19,32 +22,47 @@ if not INPUT_PATH:
 os.makedirs(os.path.dirname(INPUT_PATH), exist_ok=True)
 
 
-def main():
-    """Main processing function."""
-    rows = []
+def process_cards(input_path):
+    """Process the CSV to adjust row output depending on PACK_ID presence and OWNER column index."""
+    output_rows = []
 
-    # Read and process the CSV
-    with open(INPUT_PATH, 'r', newline='', encoding='utf-8') as infile:
-        reader = csv.DictReader(infile)
-        fieldnames = reader.fieldnames or []
-        # Validate index
-        if OWNER_COLUMN_INDEX < 0 or OWNER_COLUMN_INDEX >= len(fieldnames):
-            print(f"ERROR: OWNER_COLUMN_INDEX {OWNER_COLUMN_INDEX} is out of range.")
-            exit(1)
+    # Read the input file
+    with open(input_path, 'r', newline='', encoding='utf-8') as infile:
+        reader = csv.reader(infile)
+        header = next(reader, None)
 
-        owner_col = fieldnames[OWNER_COLUMN_INDEX]
+        # Append header unchanged
+        output_rows.append(header)
+        # Determine the maximum index we need to ensure in each row
+        max_index = max(PACK_COLUMN_INDEX, OWNER_COLUMN_INDEX)
 
         for row in reader:
-            # If the owner field is missing or empty, set to default
-            if row.get(owner_col) is None or row[owner_col].strip() == '':
-                row[owner_col] = DEFAULT_OWNER
-            rows.append(row)
+            # Ensure row has enough columns for index lookup
+            while len(row) <= max_index:
+                row.append('')
+
+            card_id = row[0].strip()
+            pack_id = row[PACK_COLUMN_INDEX].strip()
+            owner = row[OWNER_COLUMN_INDEX].strip()
+
+            if not pack_id:
+                # If PACK_ID is missing, output only CARD_ID
+                output_rows.append([card_id])
+            else:
+                # If OWNER missing but PACK_ID exists, use default owner
+                if not owner:
+                    owner = DEFAULT_OWNER
+                output_rows.append([card_id, pack_id, owner])
 
     # Write updated rows back to the same file
-    with open(INPUT_PATH, 'w', newline='', encoding='utf-8') as outfile:
-        writer = csv.DictWriter(outfile, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
+    with open(input_path, 'w', newline='', encoding='utf-8') as outfile:
+        writer = csv.writer(outfile)
+        for r in output_rows:
+            writer.writerow(r)
+
+
+def main():
+    process_cards(INPUT_PATH)
 
 
 if __name__ == "__main__":

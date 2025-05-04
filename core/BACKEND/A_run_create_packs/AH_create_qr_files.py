@@ -1,6 +1,7 @@
 import os
 import re
 import csv
+import sys
 import qrcode
 from dotenv import load_dotenv
 
@@ -12,9 +13,16 @@ INPUT_FILE = os.getenv('SYSTEM_CARD_AUTH_SCV')
 OUTPUT_DIR = os.getenv('QR_CODES_FOLDER')
 ENCODING = 'utf-8'
 
+# Validate environment variables
+if not INPUT_FILE:
+    raise ValueError("Environment variable SYSTEM_CARD_AUTH_SCV (input CSV path) is not set.")
+if not OUTPUT_DIR:
+    raise ValueError("Environment variable QR_CODES_FOLDER (output directory) is not set.")
+
 # CSV column indices (0-based)
 URL_COLUMN_INDEX = 0       # Column index for QR code data (KEY_IN)
 FILENAME_COLUMN_INDEX = 2  # Column index for output file name key (CARD_ID)
+MAX_INDEX = max(URL_COLUMN_INDEX, FILENAME_COLUMN_INDEX)
 
 # QR code settings
 QR_VERSION = 1
@@ -25,7 +33,7 @@ FILL_COLOR = "black"
 BACK_COLOR = "white"
 
 # File name template
-FILE_NAME_TEMPLATE = '{filename}.png'  # Template for QR code file names
+FILE_NAME_TEMPLATE = '{filename}.png'
 
 # Regex to strip invalid filesystem characters (Windows)
 INVALID_FILENAME_CHARS = re.compile(r'[\\/*?:"<>|]')
@@ -39,17 +47,22 @@ def sanitize_filename(name):
 if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
 
-# Open the CSV file and process each row
+# Process CSV file and generate QR codes
 with open(INPUT_FILE, 'r', encoding=ENCODING) as file:
     csv_reader = csv.reader(file)
-    next(csv_reader)  # Skip header row
+    header = next(csv_reader, None)  # Skip header row if present
 
-    for row in csv_reader:
+    for row_num, row in enumerate(csv_reader, start=2):  # start=2 accounts for header line
+        # Skip empty or malformed rows
+        if not row or len(row) <= MAX_INDEX:
+            continue
+
         url = row[URL_COLUMN_INDEX].strip()
         raw_name = row[FILENAME_COLUMN_INDEX].strip()
 
         if not url:
             # Skip rows without URL data
+            print(f"Skipping row {row_num}, empty URL.")
             continue
 
         # Sanitize the base filename (CARD_ID)
@@ -74,4 +87,3 @@ with open(INPUT_FILE, 'r', encoding=ENCODING) as file:
         # Generate image and save to file
         qr_image = qr.make_image(fill_color=FILL_COLOR, back_color=BACK_COLOR)
         qr_image.save(output_path)
-
