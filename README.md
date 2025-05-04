@@ -35,11 +35,12 @@ python run.py
 - change all existing sripts paths to .env
 - create .env_EXAMPLE
 ## v009
+- create AE_add_domain_to_system_card_url.py
 
 
 ---
 
 ## Quick github update
 git add .
-git commit -m "create .env_EXAMPLE"
+git commit -m "create AE_add_domain_to_system_card_url.py"
 git push

@@ -10,6 +10,7 @@ scripts = [
     "AB_create_1_new_pack_id.py",
     "AC_add_system_as_pack_owner.py",
     "AD_create_system_card_auth_keys.py",
+    "AE_add_domain_to_system_card_url.py",
 ]
 
 for script_path in scripts:

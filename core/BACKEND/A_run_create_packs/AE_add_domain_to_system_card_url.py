@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 # ======================== CONFIGURATION ========================
 ENV_FILE = '.env'
 ENV_GOOGLE_CALLBACK_URL = 'GOOGLE_CALLBACK_URL'
-ENV_SYSTEM_CARD_CSV = 'SYSTEM_CARD_URL_CSV'
+ENV_SYSTEM_CARD_CSV = 'SYSTEM_CARD_AUTH_SCV'
 # ===============================================================
 
 # Load environment variables
