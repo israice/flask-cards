@@ -48,6 +48,7 @@ python run.py
 - show user cards list in profile page
 - fix table.html
 ## v013
+- run py script when you enter from add_card_owner.html
 - 
 
 
@@ -63,5 +64,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "fix table.html"
+git commit -m "run py script when you enter from add_card_owner.html"
 git push

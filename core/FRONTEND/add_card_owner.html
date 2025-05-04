@@ -99,9 +99,8 @@
         SEND MAIL
       </button>
     </form>
-    <!-- Link to initiate Google OAuth login -->
-    <a href="{{ url_for('google_login') }}" class="btn btn-google" id="googleLoginBtn">
-      <!-- Google logo -->
+    <!-- Google OAuth button with ?next=add_card_owner -->
+    <a href="{{ url_for('google_login') }}?next=add_card_owner" class="btn btn-google" id="googleLoginBtn">
       <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google logo">
       Sign in with Google
     </a>
@@ -124,7 +123,7 @@
         // Create a new text input field
         const newField = document.createElement('input');
         newField.type = 'text';
-        newField.className = 'form-control mb-4 additional-input'; // English class name
+        newField.className = 'form-control mb-4 additional-input';
         newField.placeholder = 'Enter additional information';
 
         // Insert the new field immediately after the email input

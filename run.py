@@ -1,7 +1,7 @@
 import sys
 sys.dont_write_bytecode = True  # disable writing .pyc files into __pycache__
 
-from flask import Flask, render_template, redirect, url_for, session, jsonify, Response, abort, send_from_directory
+from flask import Flask, render_template, redirect, url_for, session, jsonify, Response, abort, send_from_directory, request
 from authlib.integrations.flask_client import OAuth
 import os
 from dotenv import load_dotenv
@@ -10,6 +10,7 @@ import json
 import time
 import logging
 import csv
+import subprocess
 
 # ─── CONFIGURATION ──────────────────────────────────────────────────────────────
 load_dotenv()
@@ -148,6 +149,10 @@ def login():
 
 @app.route('/google-login')
 def google_login():
+    # capture the 'next' parameter to know from where login started
+    next_page = request.args.get('next')
+    if next_page:
+        session['next_page'] = next_page
     return google.authorize_redirect(url_for('authorize', _external=True))
 
 @app.route('/auth/google/callback')
@@ -159,6 +164,15 @@ def authorize():
             email = user_info.get('email')
             save_user(email)
             session['user'] = {'email': email}
+
+            # check where the login started from
+            next_page = session.pop('next_page', None)
+            if next_page == 'add_card_owner':
+                try:
+                    subprocess.run(['python', 'test.py'], check=True)
+                except subprocess.CalledProcessError as e:
+                    logger.error(f"Error running test.py: {e}")
+
             return redirect(url_for('profile'))
     except Exception as e:
         logger.error(f"Google auth error: {e}")
