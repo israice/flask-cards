@@ -1,44 +1,149 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Profile</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        /* Ensure the page takes full viewport height without scrolling */
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Профиль</title>
+  <!-- Bootstrap CSS -->
+  <link 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
+    rel="stylesheet">
+  <style>
+    /* Full-screen centered layout */
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f0f4f8, #ffffff);
+      font-family: 'Segoe UI', sans-serif;
+    }
+    /* Center content container */
+    .center-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    /* Card-like container for profile */
+    .form-card {
+      width: 100%;
+      max-width: 360px;
+      padding: 2rem;
+      border-radius: 1rem;
+      background-color: #ffffff;
+      box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+    }
+    .form-control {
+      background-color: #f8f9fa;
+      border: 1px solid #ced4da;
+      color: #495057;
+      height: 3rem;
+      font-size: 1rem;
+    }
+    .form-control::placeholder {
+      color: #6c757d;
+    }
+    .form-control:focus {
+      background-color: #ffffff;
+      border-color: #80bdff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .btn-confirm {
+      height: 3rem;
+      font-size: 1rem;
+      font-weight: 600;
+      background: linear-gradient(90deg, #4facfe, #00f2fe);
+      border: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn-confirm:hover, .btn-confirm:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 0.5rem 1rem rgba(79, 172, 254, 0.6);
+    }
+    .btn-google {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 3rem;
+      margin-top: 1rem;
+      background-color: #ffffff;
+      color: #444;
+      font-weight: 500;
+      border: 1px solid #dee2e6;
+      border-radius: 0.5rem;
+      box-shadow: 0 0.2rem 0.5rem rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-decoration: none;
+    }
+    .btn-google img {
+      height: 1.2rem;
+      margin-right: 0.5rem;
+    }
+    .btn-google:hover, .btn-google:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+    }
+    /* Cards gallery */
+    .cards-grid {
+      padding: 1rem 0;
+    }
+    .cards-grid .card {
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .cards-grid .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+    }
+  </style>
 </head>
-<body class="bg-light">
-    <!-- Navbar -->
-    <nav class="navbar navbar-light bg-white shadow-sm">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="navbar-brand" href="#">MyApp</a>
-            <div class="d-flex">
-                {% if is_admin %}
-                <a class="btn btn-primary me-2" href="{{ url_for('table') }}">Table</a>
-                {% endif %}
-                <a class="btn btn-outline-danger" href="{{ url_for('logout') }}">Log Out</a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Center content both vertically and horizontally -->
-    <div class="container d-flex align-items-center justify-content-center h-100">
-        <div class="card shadow p-3" style="max-width: 500px; width: 100%;">
-            <div class="card-body text-center">
-                <h2 class="card-title mb-3">Welcome!</h2>
-                <p class="card-text mb-4"><strong>Email:</strong> {{ user.email }}</p>
-            </div>
-        </div>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-light bg-white shadow-sm">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <a class="navbar-brand" href="#">MyApp</a>
+      <div class="d-flex">
+        {% if is_admin %}
+        <a class="btn btn-primary me-2" href="{{ url_for('table') }}">Table</a>
+        {% endif %}
+        <a class="btn btn-outline-danger" href="{{ url_for('logout') }}">Log Out</a>
+      </div>
     </div>
+  </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Profile Info -->
+  <div class="center-container">
+    <div class="form-card text-center">
+      <h2 class="mb-3">Добро пожаловать!</h2>
+      <p class="mb-0"><strong>Email:</strong> {{ user.email }}</p>
+    </div>
+  </div>
+
+  <!-- User's Cards Gallery -->
+  <div class="container cards-grid">
+    <h3 class="mb-4 text-center">Ваши карты</h3>
+    {% if cards %}
+    <div class="row g-3">
+      {% for card in cards %}
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="card h-100 shadow-sm">
+          <img src="{{ card.url }}" class="card-img-top" alt="{{ card.card_id }}">
+          <div class="card-body text-center">
+            <p class="card-text mb-0">{{ card.card_id }}</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-center">Карт не найдено для вашего аккаунта.</p>
+    {% endif %}
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+  </script>
 </body>
 </html>

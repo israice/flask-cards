@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Email & Google Login</title>
   <!-- Bootstrap CSS -->
-  <link 
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
-    rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -37,7 +35,7 @@
       color: #888;
     }
     .form-control:focus {
-      background-color: #3c3c3c;
+      background-color: #f3eeee;
       box-shadow: 0 0 0 0.2rem rgba(0, 209, 255, 0.5);
     }
     .btn-confirm {
@@ -65,6 +63,7 @@
       border-radius: 0.5rem;
       box-shadow: 0 0.2rem 0.5rem rgba(0,0,0,0.3);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-decoration: none;
     }
     .btn-google img {
       height: 1.2rem;
@@ -72,9 +71,8 @@
     }
     .btn-google:hover, .btn-google:focus {
       transform: translateY(-2px);
-      box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.4);
+      box-shadow: 0 0.5rem 1rem rgba(241, 241, 241, 0.4);
     }
-    /* Styling for the dynamic card image */
     .card-image {
       width: 100%;
       max-width: 100%;
@@ -84,38 +82,56 @@
   </style>
 </head>
 <body>
-  <!-- Centered form container -->
   <div class="form-card d-flex flex-column">
-    
-    <!-- Conditional block: show image if image_url is passed -->
     {% if image_url %}
       <img src="{{ image_url }}" alt="Card Image" class="card-image">
     {% endif %}
-    
-    <form id="emailForm" class="d-flex flex-column">
+    <form id="emailForm" class="d-flex flex-column" novalidate>
       <input 
         type="email" 
         class="form-control mb-4" 
         id="emailInput" 
-        placeholder="Enter your email" 
-        required>
+        placeholder="Enter your email">
       <button 
         type="submit" 
-        class="btn btn-confirm text-white">
-        Confirm
-      </button>
-      <button 
-        type="button" 
-        class="btn btn-google">
-        <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google logo">
-        Sign in with Google
+        class="btn btn-confirm text-white" 
+        id="actionButton">
+        SEND MAIL
       </button>
     </form>
+    <!-- Link to initiate Google OAuth login -->
+    <a href="{{ url_for('google_login') }}" class="btn btn-google" id="googleLoginBtn">
+      <!-- Google logo -->
+      <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google logo">
+      Sign in with Google
+    </a>
   </div>
 
-  <!-- Bootstrap JS Bundle (with Popper) -->
-  <script 
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Listen to the form submission
+    document.getElementById('emailForm').addEventListener('submit', function(e) {
+      e.preventDefault(); // Prevent default form submission
+
+      const form = e.target;
+      const actionButton = document.getElementById('actionButton');
+      
+      // Change button text to CONFIRM
+      actionButton.textContent = 'CONFIRM';
+
+      // Check if additional field already exists
+      if (!form.querySelector('.additional-input')) {
+        // Create a new text input field
+        const newField = document.createElement('input');
+        newField.type = 'text';
+        newField.className = 'form-control mb-4 additional-input'; // English class name
+        newField.placeholder = 'Enter additional information';
+
+        // Insert the new field immediately after the email input
+        const emailInput = document.getElementById('emailInput');
+        emailInput.parentNode.insertBefore(newField, emailInput.nextSibling);
+      }
+    });
   </script>
 </body>
 </html>

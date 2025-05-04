@@ -44,6 +44,10 @@ python run.py
 ## v011
 - fix urls to show image id on html
 ## v012
+- fix google button in add_card_owner.html
+- show user cards list in profile page
+## v013
+- 
 
 
 
@@ -52,5 +56,5 @@ python run.py
 
 ## Quick github update
 git add .
-git commit -m "fix urls to show image id on html"
+git commit -m "show user cards list in profile page"
 git push
