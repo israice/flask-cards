@@ -11,6 +11,8 @@ scripts = [
     "AC_add_system_as_pack_owner.py",
     "AD_create_system_card_auth_keys.py",
     "AE_add_domain_to_system_card_url.py",
+    "AF_add_card_id_to_card_url.py",
+    "AG_add_card_id_to_image_file_name.py",
 ]
 
 for script_path in scripts:

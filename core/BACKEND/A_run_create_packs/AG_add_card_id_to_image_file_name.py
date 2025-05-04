@@ -54,7 +54,6 @@ def main():
     # Find first file without 'Card_' prefix
     file_to_rename = next((f for f in files if not f.startswith('Card_')), None)
     if not file_to_rename:
-        print('No files to rename. All files already have prefix "Card_".')
         exit(0)
 
     # Determine existing base names
@@ -74,7 +73,6 @@ def main():
 
     try:
         os.rename(old_path, new_path)
-        print(f'Renamed "{file_to_rename}" → "{new_name}".')
     except Exception as e:
         print(f"Error renaming file '{file_to_rename}' to '{new_name}': {e}")
 

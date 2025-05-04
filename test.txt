@@ -1,6 +1,33 @@
+создай скрипт который копирует значение 
+знчание из стобца CARD_ID
+core\data\system_cards.csv
+CARD_ID,PACK_ID,OWNER
+Card_085556,Pack_528963,SYSTEM
+Card_719714,Pack_528963,SYSTEM
+Card_363396,Pack_528963,SYSTEM
+Card_440060,Pack_528963,SYSTEM
+Card_597637,Pack_528963,SYSTEM
 
-создай стрицу html на основе bootstrap
-на странице должно быть поле ввода мейла 
-а так же кнопка ок
+копирует только следующее значение которое
+не имеется в списке 
+core\data\system_card_auth.csv
+в колонке с названием CARD_ID
+KEY_IN,KEY_OUT,CARD_ID
+http://localhost:5000/card/b3P1ZNbaVjXj9DefeHnJ6OxNJxpmuKvoPdgiq8eSyTw=,I7V7_LzkVAJaGDDRbJ-BZRVhlh5pde9fjcEi631omek=,Card_363396
+http://localhost:5000/card/ue6L5ZKuVtlhLOTLoyBYextu4VBov1USF6Ww9fg30nY=,03W57T4uJ3zJkYsbQqS8TuZY_JG30xQvEig6S3jCFLs=,Card_363395
+http://localhost:5000/card/MZS2ZavYyUMlpWnNjhBX3KEkBboxV8btf0fOzemBnNU=,HsbWQwdHhE7A6VWKiiSKjzh-3yDHcF4t2-5xWFA9DQU=,Card_085556
+http://localhost:5000/card/QeYH1hVMiFbZjP2oyydHbIW8LPqf4AJMEWe8R-y_cZo=,qIbXMNxASWjPJBPWWNok2VIiN0_7ZWpwKuB5qTjElK0=,Card_363391
+http://localhost:5000/card/KyVBUQOnpMO71VHMfdcwA8XOxLPONMPgevzaav96_-k=,PxTwYNbqACSbpJd7jRgbRijDWM4lsmvuZDEz7Fpyzgs=
+http://localhost:5000/card/3DR9B7hrDOoc_1tdoHj_k-fP8rVNRNIYBjDRQ3A0SMI=,oE_PL_g5MI7b1ziTmEiEoyjdd0UpDc4cLUlfGXwTWiU=
 
-позже пропишем логику для кнопки
+в этот файл надо записать значние из 
+core\data\system_cards.csv
+
+чтобы получилось 
+KEY_IN,KEY_OUT,CARD_ID
+http://localhost:5000/card/b3P1ZNbaVjXj9DefeHnJ6OxNJxpmuKvoPdgiq8eSyTw=,I7V7_LzkVAJaGDDRbJ-BZRVhlh5pde9fjcEi631omek=,Card_363396
+http://localhost:5000/card/ue6L5ZKuVtlhLOTLoyBYextu4VBov1USF6Ww9fg30nY=,03W57T4uJ3zJkYsbQqS8TuZY_JG30xQvEig6S3jCFLs=,Card_363395
+http://localhost:5000/card/MZS2ZavYyUMlpWnNjhBX3KEkBboxV8btf0fOzemBnNU=,HsbWQwdHhE7A6VWKiiSKjzh-3yDHcF4t2-5xWFA9DQU=,Card_085556
+http://localhost:5000/card/QeYH1hVMiFbZjP2oyydHbIW8LPqf4AJMEWe8R-y_cZo=,qIbXMNxASWjPJBPWWNok2VIiN0_7ZWpwKuB5qTjElK0=,Card_363391
+http://localhost:5000/card/KyVBUQOnpMO71VHMfdcwA8XOxLPONMPgevzaav96_-k=,PxTwYNbqACSbpJd7jRgbRijDWM4lsmvuZDEz7Fpyzgs=,Card_719714
+http://localhost:5000/card/3DR9B7hrDOoc_1tdoHj_k-fP8rVNRNIYBjDRQ3A0SMI=,oE_PL_g5MI7b1ziTmEiEoyjdd0UpDc4cLUlfGXwTWiU=

@@ -36,11 +36,20 @@ python run.py
 - create .env_EXAMPLE
 ## v009
 - create AE_add_domain_to_system_card_url.py
+- add /card/ to url inside core\data\system_card_auth.csv
+- add card_id to core\data\system_card_auth.csv
+## v010
+- create AF_add_card_id_to_card_url.py
+- create AG_add_card_id_to_image_file_name.py
+## v011
+- fix urls to show image id on html
+
+
 
 
 ---
 
 ## Quick github update
 git add .
-git commit -m "create AE_add_domain_to_system_card_url.py"
+git commit -m "AG_add_card_id_to_image_file_name.py"
 git push

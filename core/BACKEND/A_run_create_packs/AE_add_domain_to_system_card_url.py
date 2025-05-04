@@ -19,7 +19,7 @@ if not callback_url:
 
 # Parse URL to extract scheme + netloc (domain + port)
 parsed_url = urlparse(callback_url)
-new_prefix = f"{parsed_url.scheme}://{parsed_url.netloc}/"
+new_prefix = f"{parsed_url.scheme}://{parsed_url.netloc}/card/"
 
 # Get the CSV file path
 csv_file_path = os.getenv(ENV_SYSTEM_CARD_CSV)
@@ -37,7 +37,12 @@ existing_prefix = ''
 for row in rows:
     if row and (row[0].startswith('http://') or row[0].startswith('https://')):
         parsed = urlparse(row[0])
-        existing_prefix = f"{parsed.scheme}://{parsed.netloc}/"
+        # Capture up to the last slash before the ID part
+        path_parts = parsed.path.strip('/').split('/')
+        if path_parts and path_parts[0] == 'card':
+            existing_prefix = f"{parsed.scheme}://{parsed.netloc}/card/"
+        else:
+            existing_prefix = f"{parsed.scheme}://{parsed.netloc}/"
         break  # found an existing prefixed row
 
 # Process all rows' first column
@@ -45,9 +50,9 @@ for row in rows:
     if row:
         value = row[0]
         # Remove existing prefix if present
-        if existing_prefix and value.startswith(existing_prefix):
+        if value.startswith(existing_prefix):
             value = value[len(existing_prefix):]
-        # Apply new prefix
+        # Apply new prefix with '/card/'
         row[0] = new_prefix + value
 
 # Write the updated data back to the CSV
@@ -56,4 +61,4 @@ with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
     writer.writerow(header)  # write header
     writer.writerows(rows)   # write data rows
 
-# Note: This script replaces any old prefix with the new one across all rows
+# Note: This script ensures that the new prefix always includes '/card/' in the URL
