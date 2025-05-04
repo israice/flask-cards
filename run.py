@@ -88,7 +88,6 @@ def load_users():
         logger.error(f"Error reading authorized users CSV at {AUTH_USERS}: {e}")
         return pd.DataFrame()
 
-
 def save_user(email):
     """Append new user email to authorized users CSV, log errors."""
     users = load_users()
@@ -98,7 +97,6 @@ def save_user(email):
             users.to_csv(AUTH_USERS, index=False)
         except Exception as e:
             logger.error(f"Error writing authorized users CSV at {AUTH_USERS}: {e}")
-
 
 def load_admin_emails():
     """Load admin emails from CSV, return as a set."""
@@ -112,17 +110,32 @@ def load_admin_emails():
         logger.error(f"Error reading admin CSV at {SYSTEM_ADMIN_CSV}: {e}")
         return set()
 
-
 def load_cards():
-    """Load system cards data for table view, return empty if missing or error."""
+    """Load system cards data for table view, return DataFrame."""
     if not os.path.exists(SYSTEM_CARDS_CSV):
-        logger.error(f"System cards CSV not found at: {SYSTEM_CARDS_CSV}")
-        return pd.DataFrame()
+        logger.error(f"System cards CSV not found at {SYSTEM_CARDS_CSV}")
+        return pd.DataFrame(columns=['CARD_ID','PACK_ID','OWNER'])
     try:
         return pd.read_csv(SYSTEM_CARDS_CSV)
     except Exception as e:
         logger.error(f"Error reading system cards CSV at {SYSTEM_CARDS_CSV}: {e}")
-        return pd.DataFrame()
+        return pd.DataFrame(columns=['CARD_ID','PACK_ID','OWNER'])
+
+def get_user_cards(email):
+    """Return list of this user’s card image URLs and IDs."""
+    df = load_cards()
+    user_df = df[df['OWNER'].str.strip().str.lower() == email.strip().lower()]
+    cards = []
+    for _, row in user_df.iterrows():
+        card_id = row['CARD_ID']
+        # detect extension
+        for ext in ['.png', '.jpg', '.jpeg']:
+            fname = card_id + ext
+            if os.path.exists(os.path.join(CARDS_FOLDER, fname)):
+                url = url_for('card_image', filename=fname)
+                cards.append({'card_id': card_id, 'url': url})
+                break
+    return cards
 
 # ─── ROUTES ─────────────────────────────────────────────────────────────────────
 @app.route('/')
@@ -147,8 +160,8 @@ def authorize():
             save_user(email)
             session['user'] = {'email': email}
             return redirect(url_for('profile'))
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error(f"Google auth error: {e}")
     return '', 204
 
 @app.route('/profile')
@@ -156,24 +169,31 @@ def profile():
     user = session.get('user')
     if not user:
         return redirect(url_for('login'))
-    
+
     admin_emails = load_admin_emails()
     user_email = user['email'].strip().lower()
     is_admin = user_email in admin_emails
-    
-    return render_template('profile.html', user=user, is_admin=is_admin)
+
+    # load only this user's cards
+    user_cards = get_user_cards(user_email)
+
+    return render_template('profile.html',
+                           user=user,
+                           is_admin=is_admin,
+                           cards=user_cards)
 
 @app.route('/table')
 def table():
     user = session.get('user')
     if not user:
         return redirect(url_for('login'))
-    
+
     admin_emails = load_admin_emails()
     user_email = user['email'].strip().lower()
     if user_email not in admin_emails:
         return redirect(url_for('profile'))
-    
+
+    # render admin table view
     return render_template('table.html', user=user)
 
 @app.route('/get_users')
@@ -207,11 +227,8 @@ def stream():
 def serve_card_page(key):
     """Serve the card page for a given key if it exists."""
     full_url = f'http://localhost:{PORT}/card/{key}'
-
     if full_url in KEY_TO_CARD_ID:
         card_id = KEY_TO_CARD_ID[full_url]
-
-        # Check for image with supported extensions
         image_url = None
         for ext in ['.png', '.jpg', '.jpeg']:
             image_filename = card_id + ext
@@ -219,7 +236,6 @@ def serve_card_page(key):
             if os.path.exists(image_path):
                 image_url = f'/card_image/{image_filename}'
                 break
-
         return render_template('add_card_owner.html', image_url=image_url)
     else:
         abort(404)

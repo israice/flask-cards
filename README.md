@@ -46,15 +46,22 @@ python run.py
 ## v012
 - fix google button in add_card_owner.html
 - show user cards list in profile page
+- fix table.html
 ## v013
 - 
 
 
 
+## load last updates and replace existing local files
+git fetch origin; git reset --hard origin/master; git clean -fd
 
----
+## выбери хэш среди получиных последних 10
+git log --oneline -n 10
+
+## используй хэш для получения именно этого сахронения локально
+git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "show user cards list in profile page"
+git commit -m "fix table.html"
 git push
