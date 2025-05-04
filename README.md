@@ -48,8 +48,11 @@ python run.py
 - show user cards list in profile page
 - fix table.html
 ## v013
-- run py script when you enter from add_card_owner.html
-- 
+- run test.py when you login using add_card_owner.html
+- create AH_create_qr_files.py
+- change all script to be based on calmns index
+## v014
+- test all scripts step by step and fix steps 
 
 
 
@@ -64,5 +67,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "run py script when you enter from add_card_owner.html"
+git commit -m "change all script to be based on calmns index"
 git push

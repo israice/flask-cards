@@ -13,6 +13,7 @@ scripts = [
     "AE_add_domain_to_system_card_url.py",
     "AF_add_card_id_to_card_url.py",
     "AG_add_card_id_to_image_file_name.py",
+    "AH_create_qr_files.py",
 ]
 
 for script_path in scripts:

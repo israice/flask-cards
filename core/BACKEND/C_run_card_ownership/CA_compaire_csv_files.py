@@ -1,43 +1,67 @@
-# ================= SETTINGS =================
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os
-from dotenv import load_dotenv
+import sys
 import csv
+from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# === SETTINGS ===
+load_dotenv()  # Load variables from .env
+MAILS_FILE          = os.getenv('AUTH_USERS')       # Path to auth_users.csv
+COLLECTION_FILE      = os.getenv('SYSTEM_DB_CSV')    # Path to system_db.csv
+MAILS_EMAIL_COL_INDEX = 0   # Column index for email in auth_users.csv (0-based)
+COLL_EMAIL_COL_INDEX  = 0   # Column index for email in system_db.csv (0-based)
+ENCODING             = 'utf-8'  # File encoding
 
-mails_file = os.getenv('AUTH_USERS')  # Path to auth_users.csv from .env
-collection_file = os.getenv('SYSTEM_DB_CSV')  # Path to system_db.csv from .env
-email_field_name = 'email'  # Name of the email column
-encoding = 'utf-8'  # File encoding
-# ============================================
+# === VALIDATE ENVIRONMENT ===
+if not MAILS_FILE:
+    print('Error: environment variable AUTH_USERS is not set.', file=sys.stderr)
+    sys.exit(1)
+if not COLLECTION_FILE:
+    print('Error: environment variable SYSTEM_DB_CSV is not set.', file=sys.stderr)
+    sys.exit(1)
 
-# Read emails from auth_users.csv
-with open(mails_file, newline='', encoding=encoding) as f:
-    reader = csv.DictReader(f)
-    mails_emails = {row[email_field_name] for row in reader}
+# === READ emails from auth_users.csv ===
+with open(MAILS_FILE, newline='', encoding=ENCODING) as f:
+    reader = csv.reader(f)
+    rows = list(reader)
+# Skip header row if present
+data_rows = rows[1:] if len(rows) > 1 else []
+# Collect emails by index
+mails_emails = {
+    row[MAILS_EMAIL_COL_INDEX].strip()
+    for row in data_rows
+    if len(row) > MAILS_EMAIL_COL_INDEX and row[MAILS_EMAIL_COL_INDEX].strip()
+}
 
-# Read emails from system_db.csv
-with open(collection_file, newline='', encoding=encoding) as f:
-    reader = csv.DictReader(f)
-    collection_rows = list(reader)
-    collection_emails = {row[email_field_name] for row in collection_rows}
+# === READ existing emails from system_db.csv ===
+collection_emails = set()
+num_cols = COLL_EMAIL_COL_INDEX + 1  # default number of columns
+if os.path.isfile(COLLECTION_FILE):
+    with open(COLLECTION_FILE, newline='', encoding=ENCODING) as f:
+        reader = csv.reader(f)
+        all_rows = list(reader)
+        if all_rows:
+            # determine columns from first row
+            num_cols = len(all_rows[0])
+            # data rows skip header
+            coll_data = all_rows[1:]
+            collection_emails = {
+                row[COLL_EMAIL_COL_INDEX].strip()
+                for row in coll_data
+                if len(row) > COLL_EMAIL_COL_INDEX and row[COLL_EMAIL_COL_INDEX].strip()
+            }
 
-# Find emails to add
+# === Determine emails to add ===
 emails_to_add = mails_emails - collection_emails
 
-# If there are emails to add, append them
+# === Append new emails if any ===
 if emails_to_add:
-    # Get fieldnames (headers) from the existing collection file
-    fieldnames = collection_rows[0].keys() if collection_rows else [email_field_name]
-
-    with open(collection_file, 'a', newline='', encoding=encoding) as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        # Check if file was empty: if yes, write header
-        if not collection_rows:
-            writer.writeheader()
+    with open(COLLECTION_FILE, 'a', newline='', encoding=ENCODING) as f:
+        writer = csv.writer(f)
         for email in emails_to_add:
-            # Write row with email; fill other fields with empty string
-            row = {field: '' for field in fieldnames}
-            row[email_field_name] = email
+            # prepare row with appropriate length
+            row = [''] * num_cols
+            row[COLL_EMAIL_COL_INDEX] = email
             writer.writerow(row)

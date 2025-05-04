@@ -1,64 +1,66 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os
-from dotenv import load_dotenv
 import csv
 from urllib.parse import urlparse
+from dotenv import load_dotenv
 
-# ======================== CONFIGURATION ========================
+# === SETTINGS ===
 ENV_FILE = '.env'
 ENV_GOOGLE_CALLBACK_URL = 'GOOGLE_CALLBACK_URL'
 ENV_SYSTEM_CARD_CSV = 'SYSTEM_CARD_AUTH_SCV'
-# ===============================================================
+URL_COLUMN_INDEX = 0          # index of the column containing the URLs (0-based)
+PREFIX_SEGMENT = 'card'       # the path segment to enforce in the URL prefix
 
-# Load environment variables
+# === LOAD ENVIRONMENT VARIABLES ===
 load_dotenv(ENV_FILE)
 
-# Get the GOOGLE_CALLBACK_URL value
+# === RETRIEVE SETTINGS ===
 callback_url = os.getenv(ENV_GOOGLE_CALLBACK_URL)
 if not callback_url:
     raise ValueError(f"{ENV_GOOGLE_CALLBACK_URL} not found in {ENV_FILE}")
 
-# Parse URL to extract scheme + netloc (domain + port)
-parsed_url = urlparse(callback_url)
-new_prefix = f"{parsed_url.scheme}://{parsed_url.netloc}/card/"
-
-# Get the CSV file path
 csv_file_path = os.getenv(ENV_SYSTEM_CARD_CSV)
 if not csv_file_path:
     raise ValueError(f"{ENV_SYSTEM_CARD_CSV} not found in {ENV_FILE}")
 
-# Read the CSV data
+# === PARSE NEW PREFIX ===
+parsed_callback = urlparse(callback_url)
+new_prefix = f"{parsed_callback.scheme}://{parsed_callback.netloc}/{PREFIX_SEGMENT}/"
+
+# === READ CSV DATA ===
 with open(csv_file_path, 'r', newline='', encoding='utf-8') as csvfile:
     reader = list(csv.reader(csvfile))
     header = reader[0]
     rows = reader[1:]  # skip header
 
-# Identify existing prefix (if any) from the first row
+# === DETECT EXISTING PREFIX ===
 existing_prefix = ''
 for row in rows:
-    if row and (row[0].startswith('http://') or row[0].startswith('https://')):
-        parsed = urlparse(row[0])
-        # Capture up to the last slash before the ID part
-        path_parts = parsed.path.strip('/').split('/')
-        if path_parts and path_parts[0] == 'card':
-            existing_prefix = f"{parsed.scheme}://{parsed.netloc}/card/"
-        else:
-            existing_prefix = f"{parsed.scheme}://{parsed.netloc}/"
-        break  # found an existing prefixed row
+    if len(row) > URL_COLUMN_INDEX:
+        val = row[URL_COLUMN_INDEX]
+        if val.startswith('http://') or val.startswith('https://'):
+            parsed = urlparse(val)
+            path_parts = parsed.path.strip('/').split('/')
+            if path_parts and path_parts[0] == PREFIX_SEGMENT:
+                existing_prefix = f"{parsed.scheme}://{parsed.netloc}/{PREFIX_SEGMENT}/"
+            else:
+                existing_prefix = f"{parsed.scheme}://{parsed.netloc}/"
+            break  # stop after finding first valid URL
 
-# Process all rows' first column
+# === PROCESS ROWS AND APPLY NEW PREFIX ===
 for row in rows:
-    if row:
-        value = row[0]
+    if len(row) > URL_COLUMN_INDEX:
+        value = row[URL_COLUMN_INDEX]
         # Remove existing prefix if present
-        if value.startswith(existing_prefix):
+        if existing_prefix and value.startswith(existing_prefix):
             value = value[len(existing_prefix):]
-        # Apply new prefix with '/card/'
-        row[0] = new_prefix + value
+        # Apply new prefix
+        row[URL_COLUMN_INDEX] = new_prefix + value
 
-# Write the updated data back to the CSV
+# === WRITE BACK CSV ===
 with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
     writer = csv.writer(csvfile)
-    writer.writerow(header)  # write header
-    writer.writerows(rows)   # write data rows
-
-# Note: This script ensures that the new prefix always includes '/card/' in the URL
+    writer.writerow(header)
+    writer.writerows(rows)
