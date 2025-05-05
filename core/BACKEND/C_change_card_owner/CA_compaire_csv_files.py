@@ -65,3 +65,5 @@ if emails_to_add:
             row = [''] * num_cols
             row[COLL_EMAIL_COL_INDEX] = email
             writer.writerow(row)
+
+print("- - move user email to main database")

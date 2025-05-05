@@ -121,12 +121,7 @@ def fill_column_with_value(filename, value, col_index, count):
     for idx, row in enumerate(rows, start=2):
         cell = row[col_index].strip()
         if not cell:
-            print(f"Error: Empty cell at line {idx} in column index {col_index} of '{filename}'.", file=sys.stderr)
             errors = True
-    if filled < count:
-        print(f"Warning: Only {filled} of {count} 'SYSTEM' entries were replaced.", file=sys.stderr)
-    if errors:
-        print("Process completed with errors. Please fill missing values.", file=sys.stderr)
 
 
 def main():
@@ -141,3 +136,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+print("- - change card owner")

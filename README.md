@@ -57,10 +57,12 @@ python run.py
 - fix module "create cards"
 - fix run.py
 - py files sorted by modules
-
-
-
 ## v015
+- create button NEW PACK inside table.html
+- connect button NEW PACK inside run.py
+
+
+## v016
 - create card stats csv
 - add stats to front card before flip
 - add button to change owner
@@ -78,5 +80,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "py files sorted by modules"
+git commit -m "create button NEW PACK inside table.html"
 git push

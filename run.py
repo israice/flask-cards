@@ -127,7 +127,7 @@ def authorize():
             next_page = session.pop('next_page', None)
             if next_page == 'add_card_owner':
                 try:
-                    subprocess.run(['python', 'test.py'], check=True)
+                    subprocess.run(['python', 'core/BACKEND/C_change_card_owner/C_run_change_card_owner.py'], check=True)
                 except subprocess.CalledProcessError:
                     pass
             return redirect(url_for('profile'))
