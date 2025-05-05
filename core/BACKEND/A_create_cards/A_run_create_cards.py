@@ -15,6 +15,7 @@ scripts = [
     "AD_create_5_new_card_ids.py",
     "AE_create_CARD_COINS_db.py",
     "AF_create_USD_AMMOUNT_db.py",
+    "AG_create_CARD_NAME_db.py",
 
     # "AC_generate_images.py",
     # "AE_add_card_id_to_card_url.py",

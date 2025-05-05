@@ -66,7 +66,7 @@ python run.py
 ## v017
 - half data checked and workin in system_full_db.csv
 ## v018
-- 
+- create AG_create_CARD_NAME_db.py
 
 
 
@@ -82,5 +82,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "half data checked and workin in system_full_db.csv"
+git commit -m "create AG_create_CARD_NAME_db.py"
 git push
