@@ -3,7 +3,7 @@ import csv
 from dotenv import load_dotenv
 
 # --- Settings ---
-COLUMN_INDEX = 0  # Index of the column to update (changeable)
+COLUMN_INDEX = 3  # Index of the column to update (changeable)
 ENV_FILE = '.env'  # Path to .env file
 CSV_ENV_KEY = 'SYSTEM_FULL_DB_CSV'  # Key in .env file for CSV file path
 COUNT_ENV_KEY = 'NUMBER_OF_CARDS'  # Key in .env file for number of rows

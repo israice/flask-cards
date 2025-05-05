@@ -22,7 +22,7 @@ FILE_ENCODING       = "utf-8"
 
 # CSV processing settings
 CSV_SEPARATOR       = ","                 # Field separator in CSV
-TARGET_COLUMN_INDEX = 2                   # Index of the column to insert coins next to
+TARGET_COLUMN_INDEX = 4                   # Index of the column to insert coins next to
 QUOTE_CHAR          = '"'                 # Quote character to wrap coin list
 
 # Randomization settings

@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 # ==== LOAD ENVIRONMENT VARIABLES ====
 load_dotenv()
 FILENAME = os.getenv('SYSTEM_FULL_DB_CSV')
-TARGET_COLUMN_INDEX = 2
+TARGET_COLUMN_INDEX = 0
 
 if not FILENAME:
     print("ERROR: SYSTEM_FULL_DB_CSV is not set in the .env file.")

@@ -14,14 +14,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Path to the CSV file (set in .env as SYSTEM_FULL_DB_CSV or hardcode here)
-SYSTEM_FULL_DB_CSV = os.getenv("SYSTEM_FULL_DB_CSV", "path/to/your.csv")
+SYSTEM_FULL_DB_CSV = os.getenv("SYSTEM_FULL_DB_CSV")
 
 # File I/O settings
 FILE_ENCODING = "utf-8"
 
 # Column indexes (0-based)
-COIN_COLUMN_INDEX   = 3  # coins list is in the 4th column (index 3)
-TARGET_COLUMN_INDEX = 4  # insert generated values into the 5th column (index 4)
+COIN_COLUMN_INDEX   = 5  # coins list is in the 4th column (index 3)
+TARGET_COLUMN_INDEX = 6  # insert generated values into the 5th column (index 4)
 
 # Randomization limits
 MIN_VALUE = 0.02   # minimum allowed for each generated value

@@ -23,6 +23,7 @@ SYSTEM_ADMIN_CSV = os.getenv('SYSTEM_ADMIN_CSV')
 SYSTEM_CARDS_CSV = os.getenv('SYSTEM_CARDS_CSV')
 TEMPLATE_FOLDER = os.getenv('TEMPLATE_FOLDER')
 SYSTEM_CARD_AUTH_CSV = os.getenv('SYSTEM_CARD_AUTH_SCV')
+SYSTEM_FULL_DB_CSV = os.getenv('SYSTEM_FULL_DB_CSV')
 CARDS_FOLDER = os.getenv('CARDS_BANK_FOLDER')
 
 PORT = int(os.getenv('PORT', 5000))
@@ -34,6 +35,7 @@ required_envs = {
     'SYSTEM_CARDS_CSV': SYSTEM_CARDS_CSV,
     'TEMPLATE_FOLDER': TEMPLATE_FOLDER,
     'SYSTEM_CARD_AUTH_SCV': SYSTEM_CARD_AUTH_CSV,
+    'SYSTEM_FULL_DB_CSV': SYSTEM_FULL_DB_CSV,
     'CARDS_BANK_FOLDER': CARDS_FOLDER
 }
 for name, val in required_envs.items():
@@ -57,10 +59,10 @@ google = oauth.register(
 
 KEY_TO_CARD_ID = {}
 try:
-    with open(SYSTEM_CARD_AUTH_CSV, newline='') as csvfile:
+    with open(SYSTEM_FULL_DB_CSV, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            KEY_TO_CARD_ID[row['KEY_IN']] = row['CARD_ID']
+            KEY_TO_CARD_ID[row['CARD_URL']] = row['CARD_ID']
 except Exception:
     pass
 
@@ -81,10 +83,10 @@ def get_user_cards(email):
 def load_cards():
     rows = []
     max_columns = 0
-    if not os.path.exists(SYSTEM_CARDS_CSV):
+    if not os.path.exists(SYSTEM_FULL_DB_CSV):
         return [], []
     try:
-        with open(SYSTEM_CARDS_CSV, newline='', encoding='utf-8') as csvfile:
+        with open(SYSTEM_FULL_DB_CSV, newline='', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 rows.append(row)
@@ -183,8 +185,8 @@ def stream():
     def event_stream():
         last_mtime = 0
         while True:
-            if os.path.exists(SYSTEM_CARDS_CSV):
-                current_mtime = os.path.getmtime(SYSTEM_CARDS_CSV)
+            if os.path.exists(SYSTEM_FULL_DB_CSV):
+                current_mtime = os.path.getmtime(SYSTEM_FULL_DB_CSV)
                 if current_mtime != last_mtime:
                     last_mtime = current_mtime
                     records, columns = load_cards()

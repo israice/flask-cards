@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configurable parameters from environment
-INPUT_FILE = os.getenv('SYSTEM_CARD_AUTH_SCV')
+INPUT_FILE = os.getenv('SYSTEM_FULL_DB_CSV')
 OUTPUT_DIR = os.getenv('QR_CODES_FOLDER')
 ENCODING = 'utf-8'
 
@@ -20,8 +20,8 @@ if not OUTPUT_DIR:
     raise ValueError("Environment variable QR_CODES_FOLDER (output directory) is not set.")
 
 # CSV column indices (0-based)
-URL_COLUMN_INDEX = 0       # Column index for QR code data (KEY_IN)
-FILENAME_COLUMN_INDEX = 2  # Column index for output file name key (CARD_ID)
+URL_COLUMN_INDEX = 12       # Column index for QR code data (KEY_IN)
+FILENAME_COLUMN_INDEX = 0  # Column index for output file name key (CARD_ID)
 MAX_INDEX = max(URL_COLUMN_INDEX, FILENAME_COLUMN_INDEX)
 
 # QR code settings
@@ -90,4 +90,3 @@ with open(INPUT_FILE, 'r', encoding=ENCODING) as file:
 
 
 
-print("create 5 QR codes for each card id")

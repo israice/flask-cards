@@ -12,8 +12,8 @@ load_dotenv(ENV_FILE)  # Load variables from .env before calling getenv
 
 # === SETTINGS ===
 CARDS_BANK_FOLDER = os.getenv('CARDS_BANK_FOLDER')            # Folder with card files
-SYSTEM_CARD_AUTH_SCV = os.getenv('SYSTEM_CARD_AUTH_SCV')      # Path to auth CSV
-CARD_ID_COL_INDEX = 2                                         # Index of CARD_ID column (0-based)
+SYSTEM_CARD_AUTH_SCV = os.getenv('SYSTEM_FULL_DB_CSV')      # Path to auth CSV
+CARD_ID_COL_INDEX = 0                                         # Index of CARD_ID column (0-based)
 PREFIX = 'Card_'                                              # Files with this prefix are skipped
 
 # === VALIDATE CONFIGURATION ===
@@ -85,4 +85,3 @@ if __name__ == '__main__':
 
 
 
-print("add card name to image file name")

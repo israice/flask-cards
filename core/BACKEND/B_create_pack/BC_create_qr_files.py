@@ -90,4 +90,3 @@ with open(INPUT_FILE, 'r', encoding=ENCODING) as file:
 
 
 
-print("create 5 QR codes for each card id")

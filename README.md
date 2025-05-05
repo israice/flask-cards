@@ -67,8 +67,18 @@ python run.py
 - half data checked and workin in system_full_db.csv
 ## v018
 - create AG_create_CARD_NAME_db.py
-
-
+- repair AH_create_1_new_pack_id.py
+- create AI_create_CARD_CHAIN_db.py
+- create AJ_create_CARD_THEME_db.py
+- create AK_create_CARD_TYPE_db.py
+- create AL_create_CARD_DATE_db.py
+- create AM_create_CARD_KEYS_db.py
+- create AN_create_CARD_URL_db.py
+- create AO_create_qr_files.py
+- create AP_create_images.py
+- create AQ_create_images_names.py
+## v018
+- fixing run.py cards on profile page
 
 
 ## load last updates and replace existing local files
@@ -82,5 +92,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "create AG_create_CARD_NAME_db.py"
+git commit -m "fixing run.py cards on profile page"
 git push

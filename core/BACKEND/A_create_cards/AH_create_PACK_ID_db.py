@@ -10,7 +10,7 @@ FILENAME = os.getenv('SYSTEM_FULL_DB_CSV')
 NUM_CARDS_ENV = os.getenv('NUMBER_OF_CARDS')
 
 # ==== SETTINGS ====
-TARGET_COLUMN_INDEX = 6    # Zero-based index for 'CARD_ID'
+TARGET_COLUMN_INDEX = 1    # Zero-based index for 'CARD_ID'
 TRIGGER_RUNS = 1           # Number of different IDs (batches) to generate in one run
 ID_PREFIX = 'Pack_'
 ID_RANGE_START = 1

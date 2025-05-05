@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 # === LOAD ENVIRONMENT VARIABLES ===
 load_dotenv()
-OUTPUT_DIR = os.getenv('CARDS_BANK_FOLDER', 'core/data/generate_images')  # default if missing
+OUTPUT_DIR = os.getenv('CARDS_BANK_FOLDER') 
 
 # === SETTINGS ===
 IMAGE_WIDTH = 768                      # Width of the generated image
@@ -89,4 +89,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-print("Image generation completed")

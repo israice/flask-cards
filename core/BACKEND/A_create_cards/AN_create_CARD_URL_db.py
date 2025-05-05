@@ -9,8 +9,8 @@ from dotenv import load_dotenv
 # === SETTINGS ===
 ENV_FILE = '.env'
 ENV_GOOGLE_CALLBACK_URL = 'GOOGLE_CALLBACK_URL'
-ENV_SYSTEM_CARD_CSV = 'SYSTEM_CARD_AUTH_SCV'
-URL_COLUMN_INDEX = 0          # index of the column containing the URLs (0-based)
+ENV_SYSTEM_CARD_CSV = 'SYSTEM_FULL_DB_CSV'
+URL_COLUMN_INDEX = 11          # index of the column containing the URLs (0-based)
 PREFIX_SEGMENT = 'card'       # the path segment to enforce in the URL prefix
 
 # === LOAD ENVIRONMENT VARIABLES ===
@@ -66,4 +66,3 @@ with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
     writer.writerows(rows)
 
 
-print("add domain to keys")

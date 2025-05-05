@@ -6,21 +6,23 @@ import importlib
 
 # List of script paths (relative or absolute)
 scripts = [
-    # "AA_create_system_card_auth_keys.py",
-    # "AB_add_domain_to_system_card_url.py",
-
-    # "AA_get_top_coingecko_coins.py",
+    "AA_get_top_coingecko_coins.py",
+    "AD_create_CARD_ID_db.py",
+    "AH_create_PACK_ID_db.py",
+    "AL_create_CARD_DATE_db.py",
     "AB_create_USER_TYPE_db.py",
     "AC_create_CARD_OWNER_db.py",
-    "AD_create_5_new_card_ids.py",
     "AE_create_CARD_COINS_db.py",
     "AF_create_USD_AMMOUNT_db.py",
     "AG_create_CARD_NAME_db.py",
-
-    # "AC_generate_images.py",
-    # "AE_add_card_id_to_card_url.py",
-    # "AF_add_card_id_to_image_file_name.py",
-    # "AG_create_qr_files.py",
+    "AI_create_CARD_CHAIN_db.py",
+    "AJ_create_CARD_THEME_db.py",
+    "AK_create_CARD_TYPE_db.py",
+    "AM_create_CARD_KEYS_db.py",
+    "AN_create_CARD_URL_db.py",
+    "AO_create_qr_files.py",
+    "AP_create_images.py",
+    "AQ_create_images_names.py",
 ]
 
 for script_path in scripts:
