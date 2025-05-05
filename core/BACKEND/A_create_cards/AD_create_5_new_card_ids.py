@@ -6,14 +6,14 @@ from dotenv import load_dotenv
 
 # ==== LOAD ENVIRONMENT VARIABLES ====
 load_dotenv()
-FILENAME = os.getenv('SYSTEM_CARDS_CSV')
+FILENAME = os.getenv('SYSTEM_FULL_DB_CSV')
+TARGET_COLUMN_INDEX = 2
 
 if not FILENAME:
-    print("ERROR: SYSTEM_CARDS_CSV is not set in the .env file.")
+    print("ERROR: SYSTEM_FULL_DB_CSV is not set in the .env file.")
     exit(1)
 
 # ==== SETTINGS ====
-TARGET_COLUMN_INDEX = 0       # Zero-based index (0 = first column)
 NUM_IDS_TO_ADD = 5
 ID_PREFIX = 'Card_'
 ID_RANGE_START = 1
@@ -117,5 +117,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-
-print("5 new CARDS created")

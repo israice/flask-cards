@@ -63,13 +63,12 @@ python run.py
 - create card system_card_stats.csv
 - create system_card_coins.csv
 - create system_full_db.csv
-- create CSS JS for each HTML file 
-- split the code for HTML CSS JS
-
 ## v017
-- add stats to front card before flip
-- add button to change owner
-- add button to activate card
+- half data checked and workin in system_full_db.csv
+## v018
+- 
+
+
 
 
 ## load last updates and replace existing local files
@@ -83,5 +82,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "create CSS JS for each HTML file"
+git commit -m "half data checked and workin in system_full_db.csv"
 git push

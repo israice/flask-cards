@@ -127,7 +127,7 @@ def authorize():
             next_page = session.pop('next_page', None)
             if next_page == 'add_card_owner':
                 try:
-                    subprocess.run(['python', 'core/BACKEND/C_change_card_owner/C_run_change_card_owner.py'], check=True)
+                    subprocess.run(['python', 'core/BACKEND/D_change_card_owner/D_run_change_card_owner.py'], check=True)
                 except subprocess.CalledProcessError:
                     pass
             return redirect(url_for('profile'))
@@ -146,7 +146,7 @@ def profile():
             with open(SYSTEM_ADMIN_CSV, newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    admin_emails.add(row['admin_email'].strip().lower())
+                    admin_emails.add(row['ADMIN_WHITELIST'].strip().lower())
         except Exception:
             pass
     user_email = user['email'].strip().lower()
@@ -165,7 +165,7 @@ def table():
             with open(SYSTEM_ADMIN_CSV, newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    admin_emails.add(row['admin_email'].strip().lower())
+                    admin_emails.add(row['ADMIN_WHITELIST'].strip().lower())
         except Exception:
             pass
     user_email = user['email'].strip().lower()
@@ -225,3 +225,5 @@ def logout():
 if __name__ == '__main__':
     print(f"- - http://localhost:{PORT}")
     app.run(host='0.0.0.0', port=PORT, debug=False, use_reloader=False)
+
+
