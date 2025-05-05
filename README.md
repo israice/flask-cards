@@ -53,10 +53,11 @@ python run.py
 - change all script to be based on calmns index
 ## v014
 - test scripts one by one make sure they works
-- fix "create pack" flow
-- fix "create pack" > "system ownership"
-- fix "create pack" > "system ownership" > "create cards"
-- fix "create pack" > "system ownership" > "create cards" > "user ownership"
+- create generate_images.py
+- fix module "create cards"
+
+
+
 ## v015
 - create card stats csv
 - add stats to front card before flip
@@ -75,5 +76,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "test scripts one by one make sure they works"
+git commit -m "fix module create cards"
 git push

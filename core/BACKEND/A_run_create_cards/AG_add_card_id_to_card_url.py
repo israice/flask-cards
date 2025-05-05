@@ -11,10 +11,14 @@ from dotenv import load_dotenv
 # Environment variable names
 SYSTEM_CARDS_CSV_VAR = 'SYSTEM_CARDS_CSV'
 SYSTEM_CARD_AUTH_SCV_VAR = 'SYSTEM_CARD_AUTH_SCV'
+CARD_ASSIGN_COUNT_VAR = 'CARD_ASSIGN_COUNT'  # NEW: number of CARD_IDs to assign
 
 # Column indices (0-based)
 CARDS_ID_COL_INDEX = 0         # Index of CARD_ID in system_cards.csv
 AUTH_CARD_ID_INDEX = 2         # Index of CARD_ID in system_card_auth.csv
+
+# Default count if env var not set or invalid
+DEFAULT_ASSIGN_COUNT = 5
 
 # === ERROR HANDLING ===
 def die(msg):
@@ -26,6 +30,12 @@ def die(msg):
 load_dotenv()
 CARDS_CSV_PATH = Path(os.getenv(SYSTEM_CARDS_CSV_VAR, '')).resolve()
 AUTH_CSV_PATH  = Path(os.getenv(SYSTEM_CARD_AUTH_SCV_VAR, '')).resolve()
+try:
+    ASSIGN_COUNT = int(os.getenv(CARD_ASSIGN_COUNT_VAR, DEFAULT_ASSIGN_COUNT))
+    if ASSIGN_COUNT < 1:
+        raise ValueError
+except ValueError:
+    ASSIGN_COUNT = DEFAULT_ASSIGN_COUNT
 
 # === VALIDATION ===
 if not CARDS_CSV_PATH:
@@ -36,7 +46,6 @@ if not CARDS_CSV_PATH.exists():
     die(f'Cards file not found: {CARDS_CSV_PATH}')
 if not AUTH_CSV_PATH.exists():
     die(f'Auth file not found: {AUTH_CSV_PATH}')
-
 
 def load_card_ids(path: Path):
     """Load CARD_IDs from cards CSV."""
@@ -53,7 +62,6 @@ def load_card_ids(path: Path):
                 ids.append(cid)
     return ids
 
-
 def load_auth_rows(path: Path):
     """Load auth CSV header and rows."""
     with path.open('r', encoding='utf-8', newline='') as f:
@@ -63,7 +71,6 @@ def load_auth_rows(path: Path):
             die('Invalid auth CSV header or index out of range')
         rows = [row for row in reader]
     return header, rows
-
 
 def save_auth_rows(path: Path, header, rows):
     """Save auth CSV atomically, trimming trailing empty cells."""
@@ -77,9 +84,8 @@ def save_auth_rows(path: Path, header, rows):
             writer.writerow(row[:last+1])
     temp.replace(path)
 
-
-def fill_next_empty(cards_path: Path, auth_path: Path):
-    """Find next unassigned CARD_ID and fill the first empty slot."""
+def fill_next_empty(cards_path: Path, auth_path: Path, count: int):
+    """Find next unassigned CARD_IDs and fill the first empty slots."""
     all_ids = load_card_ids(cards_path)
     header, auth_rows = load_auth_rows(auth_path)
     # Normalize rows length
@@ -90,16 +96,21 @@ def fill_next_empty(cards_path: Path, auth_path: Path):
     existing = {r[AUTH_CARD_ID_INDEX].strip() for r in auth_rows if r[AUTH_CARD_ID_INDEX].strip()}
     missing = [cid for cid in all_ids if cid not in existing]
     if not missing:
+        print('No missing CARD_IDs to assign.')
         return
-    next_id = missing[0]
-    # Assign to first empty row
-    for idx, row in enumerate(auth_rows):
-        if not row[AUTH_CARD_ID_INDEX].strip():
-            row[AUTH_CARD_ID_INDEX] = next_id
+    # Assign up to 'count' IDs to empty rows
+    assigned = 0
+    for next_id in missing:
+        for row in auth_rows:
+            if not row[AUTH_CARD_ID_INDEX].strip():
+                row[AUTH_CARD_ID_INDEX] = next_id
+                assigned += 1
+                break
+        if assigned >= count:
             break
-    else:
-        die('No empty CARD_ID slot found')
     save_auth_rows(auth_path, header, auth_rows)
 
 # Execute on import or run
-fill_next_empty(CARDS_CSV_PATH, AUTH_CSV_PATH)
+fill_next_empty(CARDS_CSV_PATH, AUTH_CSV_PATH, ASSIGN_COUNT)
+
+print("CARD new URL owner")

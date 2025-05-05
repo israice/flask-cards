@@ -116,3 +116,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+print("5 new CARDS created")

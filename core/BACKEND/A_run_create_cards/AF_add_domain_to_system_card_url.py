@@ -64,3 +64,6 @@ with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerow(header)
     writer.writerows(rows)
+
+
+print("add domain to keys")

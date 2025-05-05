@@ -87,3 +87,7 @@ with open(INPUT_FILE, 'r', encoding=ENCODING) as file:
         # Generate image and save to file
         qr_image = qr.make_image(fill_color=FILL_COLOR, back_color=BACK_COLOR)
         qr_image.save(output_path)
+
+
+
+print("create 5 QR codes for each card id")

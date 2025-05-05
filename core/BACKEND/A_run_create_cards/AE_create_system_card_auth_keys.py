@@ -38,3 +38,5 @@ with open(file_path, mode='a', newline='', encoding='utf-8') as csvfile:
         row[KEY_IN_INDEX] = key_in
         row[KEY_OUT_INDEX] = key_out
         writer.writerow(row)
+
+print("5 keys created")

@@ -12,7 +12,7 @@ OUTPUT_DIR = os.getenv('CARDS_BANK_FOLDER', 'core/data/generate_images')  # defa
 IMAGE_WIDTH = 768                      # Width of the generated image
 IMAGE_HEIGHT = 1152                    # Height of the generated image
 BACKGROUND_COLOR = (30, 30, 30)        # Background color (white)
-NUM_IMAGES = 2                         # Number of images to generate
+NUM_IMAGES = 5                         # Number of images to generate
 FILE_EXTENSION = '.png'                # File extension (including dot)
 
 # Universal image generation function
@@ -88,3 +88,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+print("Image generation completed")
