@@ -1,4 +1,5 @@
 .env
 test.txt
 test.py
-/core/data/
+/core/data/cards_bank/
+/core/data/qr_codes/

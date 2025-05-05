@@ -1,0 +1,4 @@
+USER_TYPE,CARD_OWNER,CARD_ID,CARD_COINS,USD_AMMOUNT,CARD_NAME,PACK_ID,CARD_CHAIN,CARD_THEME,CARD_TYPE,CARD_CREATED,CARD_URL,CARD_KEY
+ADMIN,israice@gmail.com,Card_052189,"XRP, BNB, DOT","1.05, 0.54, 2.11",Legendary Dude,Pack_161000,BSC Binance Smart Chain,Red Book,Legendary,2023-10-01,http://localhost:5000/card/KyVBUQOnpMO71VHMfdcwA8XOxLPONMPgevzaav96_-k=,PxTwYNbqACSbpJd7jRgbRijDWM4lsmvuZDEz7Fpyzgs=
+SYSTEM,SYSTEM,Card_032179,"NEO, ETH, LTC","0.80, 0.05, 4.01",Super Card,Pack_148000,Ethereum Mainnet,Genesis,Super Legendary,2023-10-01,http://localhost:5000/card/02hKNWRT7sg-G7DTy6nfPGtvLxMncZXe5gAdqa_21zo=,47ajDR9GGjKGNzjk0MLT_e48Wg6yi-Pg74L_BM9Or8U=
+USER,israskills@gmail.com,Card_038189,"XMR, BCH, TON","1.12, 1.88, 1.74",Crypto Fart,Pack_141100,Avalanche C-Chain,Charity,Akpha Type,2023-10-01,http://localhost:5000/card/VdP2pKLFKQAJNKMe6ycJDbjLqg-sA5cE9xpCPw3NwK8=,mAiobUcBaux-iNatr6EqBPQCWq73ZLIO7-VGGEpsCiY=

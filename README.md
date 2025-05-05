@@ -59,11 +59,13 @@ python run.py
 - py files sorted by modules
 ## v015
 - create button NEW PACK inside table.html
-- connect button NEW PACK inside run.py
-
-
 ## v016
-- create card stats csv
+- create card system_card_stats.csv
+- create system_card_coins.csv
+- create system_full_db.csv
+
+
+## v017
 - add stats to front card before flip
 - add button to change owner
 - add button to activate card
@@ -80,5 +82,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "create button NEW PACK inside table.html"
+git commit -m "create system_full_db.csv"
 git push
