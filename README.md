@@ -55,6 +55,7 @@ python run.py
 - test scripts one by one make sure they works
 - create generate_images.py
 - fix module "create cards"
+- fix run.py
 
 
 
@@ -76,5 +77,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "fix module create cards"
+git commit -m "fix run.py"
 git push
