@@ -6,7 +6,9 @@ import importlib
 
 # List of script paths (relative or absolute)
 scripts = [
-    # -----------------
+    "BA_create_1_new_pack_id.py",
+    "BB_add_system_as_pack_owner.py",
+    "BC_create_qr_files.py",
 ]
 
 for script_path in scripts:

@@ -7,13 +7,13 @@ import importlib
 # List of script paths (relative or absolute)
 scripts = [
 
-    "AE_create_system_card_auth_keys.py",
-    "AF_add_domain_to_system_card_url.py",
-    "AA_generate_images.py",
-    "AB_create_5_new_card_ids.py",
-    "AG_add_card_id_to_card_url.py",
-    "AH_add_card_id_to_image_file_name.py",
-    "AI_create_qr_files.py",
+    "AA_create_system_card_auth_keys.py",
+    "AB_add_domain_to_system_card_url.py",
+    "AC_generate_images.py",
+    "AD_create_5_new_card_ids.py",
+    "AE_add_card_id_to_card_url.py",
+    "AF_add_card_id_to_image_file_name.py",
+    "AG_create_qr_files.py",
 ]
 
 for script_path in scripts:

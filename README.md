@@ -56,6 +56,7 @@ python run.py
 - create generate_images.py
 - fix module "create cards"
 - fix run.py
+- py files sorted by modules
 
 
 
@@ -77,5 +78,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "fix run.py"
+git commit -m "py files sorted by modules"
 git push
