@@ -80,7 +80,9 @@ python run.py
 ## v018
 - fixing run.py cards on profile page
 - all works need only to fix py after card login
-
+- version v0.1.0 ajax on both /profile and /table
+## v1.0
+- working version v0.1.0
 
 ## load last updates and replace existing local files
 git fetch origin; git reset --hard origin/master; git clean -fd
@@ -93,5 +95,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "all works need only to fix py after card login"
+git commit -m "working version v0.1.0"
 git push

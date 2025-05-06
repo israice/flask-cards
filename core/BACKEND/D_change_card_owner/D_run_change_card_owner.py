@@ -6,8 +6,8 @@ import importlib
 
 # List of script paths (relative or absolute)
 scripts = [
-    "DA_compaire_csv_files.py",
-    "DB_add_user_mail_to_pack.py",
+    "DA_move_auth_user_to_db.py",
+    "DB_update_user_type_for_admins_in_db.py",
 ]
 
 for script_path in scripts:
