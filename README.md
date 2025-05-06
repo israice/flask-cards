@@ -79,6 +79,7 @@ python run.py
 - create AQ_create_images_names.py
 ## v018
 - fixing run.py cards on profile page
+- all works need only to fix py after card login
 
 
 ## load last updates and replace existing local files
@@ -92,5 +93,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "fixing run.py cards on profile page"
+git commit -m "all works need only to fix py after card login"
 git push
