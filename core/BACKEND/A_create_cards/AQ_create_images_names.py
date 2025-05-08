@@ -12,7 +12,7 @@ load_dotenv(ENV_FILE)  # Load variables from .env before calling getenv
 
 # === SETTINGS ===
 CARDS_BANK_FOLDER = os.getenv('CARDS_BANK_FOLDER')            # Folder with card files
-SYSTEM_CARD_AUTH_SCV = os.getenv('SYSTEM_FULL_DB_CSV')      # Path to auth CSV
+SYSTEM_FULL_DB_CSV = os.getenv('SYSTEM_FULL_DB_CSV')      # Path to auth CSV
 CARD_ID_COL_INDEX = 0                                         # Index of CARD_ID column (0-based)
 PREFIX = 'Card_'                                              # Files with this prefix are skipped
 
@@ -20,17 +20,17 @@ PREFIX = 'Card_'                                              # Files with this 
 if not CARDS_BANK_FOLDER:
     print('Error: CARDS_BANK_FOLDER not set in environment variables.', file=sys.stderr)
     sys.exit(1)
-if not SYSTEM_CARD_AUTH_SCV:
-    print('Error: SYSTEM_CARD_AUTH_SCV not set in environment variables.', file=sys.stderr)
+if not SYSTEM_FULL_DB_CSV:
+    print('Error: SYSTEM_FULL_DB_CSV not set in environment variables.', file=sys.stderr)
     sys.exit(1)
 
 def main():
     """Rename all non-prefixed files to next available CARD_IDs based on column index."""
     # Read CSV into DataFrame
     try:
-        df = pd.read_csv(SYSTEM_CARD_AUTH_SCV, dtype=str)
+        df = pd.read_csv(SYSTEM_FULL_DB_CSV, dtype=str)
     except Exception as e:
-        print(f"Error reading CSV at '{SYSTEM_CARD_AUTH_SCV}': {e}", file=sys.stderr)
+        print(f"Error reading CSV at '{SYSTEM_FULL_DB_CSV}': {e}", file=sys.stderr)
         sys.exit(1)
 
     # Validate index

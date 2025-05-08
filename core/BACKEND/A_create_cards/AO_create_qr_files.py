@@ -15,7 +15,7 @@ ENCODING = 'utf-8'
 
 # Validate environment variables
 if not INPUT_FILE:
-    raise ValueError("Environment variable SYSTEM_CARD_AUTH_SCV (input CSV path) is not set.")
+    raise ValueError("Environment variable (input CSV path) is not set.")
 if not OUTPUT_DIR:
     raise ValueError("Environment variable QR_CODES_FOLDER (output directory) is not set.")
 

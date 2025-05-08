@@ -207,7 +207,7 @@ def api_cards():
 @app.route('/card/<path:key>')
 def serve_card_page(key):
     """Serve individual card page for adding card owner"""
-    full_url = f'http://localhost:{PORT}/card/{key}'
+    full_url = f'https://nakama.wfork.org/card/{key}'
     if full_url not in KEY_TO_CARD_ID:
         abort(404)
     card_id = KEY_TO_CARD_ID[full_url]
@@ -229,5 +229,5 @@ def page_not_found(e):
     return render_template('404.html'), 404
 
 if __name__ == '__main__':
-    print(f"- - http://localhost:{PORT}")
+    print(f"- - https://nakama.wfork.org")
     app.run(host='0.0.0.0', port=PORT, debug=False, use_reloader=False)

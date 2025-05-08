@@ -9,13 +9,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configurable parameters from environment
-INPUT_FILE = os.getenv('SYSTEM_CARD_AUTH_SCV')
+INPUT_FILE = os.getenv('SYSTEM_FULL_DB_CSV')
 OUTPUT_DIR = os.getenv('QR_CODES_FOLDER')
 ENCODING = 'utf-8'
 
 # Validate environment variables
 if not INPUT_FILE:
-    raise ValueError("Environment variable SYSTEM_CARD_AUTH_SCV (input CSV path) is not set.")
+    raise ValueError("Environment variable SYSTEM_FULL_DB_CSV (input CSV path) is not set.")
 if not OUTPUT_DIR:
     raise ValueError("Environment variable QR_CODES_FOLDER (output directory) is not set.")
 
