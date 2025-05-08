@@ -183,7 +183,10 @@ def logout():
 def table():
     """Render admin table view"""
     user = session.get('user')
-    if not user or user['email'] not in ADMIN_EMAILS:
+    # Ensure ADMIN_EMAILS is up-to-date
+    records, _ = load_csv_data()
+    admin_emails = get_admin_emails(records)
+    if not user or user['email'] not in admin_emails:
         return redirect(url_for('profile'))
     return render_template('table.html', user=user)
 
@@ -222,6 +225,25 @@ def serve_card_page(key):
 def card_image(filename):
     """Serve card image files"""
     return send_from_directory(CARDS_FOLDER, filename)
+
+# NEW ROUTE: Trigger card creation script
+@app.route('/run_create_cards', methods=['POST'])
+def run_create_cards():
+    """Run the A_run_create_cards.py script on button click"""
+    user = session.get('user')
+    # Reload admin list to ensure up-to-date permissions
+    records, _ = load_csv_data()
+    admin_emails = get_admin_emails(records)
+    if not user or user['email'] not in admin_emails:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+    try:
+        subprocess.run(
+            ['python', os.path.join('core', 'BACKEND', 'A_create_cards', 'A_run_create_cards.py')],
+            check=True
+        )
+        return jsonify({'status': 'success'})
+    except subprocess.CalledProcessError as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.errorhandler(404)
 def page_not_found(e):

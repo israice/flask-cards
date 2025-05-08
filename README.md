@@ -83,7 +83,9 @@ python run.py
 - version v0.1.0 ajax on both /profile and /table
 ## v1.0
 - working version v0.1.0
+## v1.001
 - domain nakama.wfork.org added instead of localhost
+- added NEW PACK button to table.html
 
 
 
@@ -99,5 +101,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "domain nakama.wfork.org added instead of localhost"
+git commit -m "added NEW PACK button to table.html"
 git push
