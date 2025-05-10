@@ -1,8 +1,3 @@
-## run
-python run.py
-
----
-
 # project log
 ## v001
 - create flask with 2 html pages and google auth
@@ -86,9 +81,12 @@ python run.py
 ## v1.001
 - domain nakama.wfork.org added instead of localhost
 - added NEW PACK button to table.html
+## v1.002
+- all no needed files was removed
 
 
-
+## run
+python run.py
 
 ## load last updates and replace existing local files
 git fetch origin; git reset --hard origin/master; git clean -fd
@@ -101,5 +99,5 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
 ## Quick github update
 git add .
-git commit -m "added NEW PACK button to table.html"
+git commit -m "all no needed files was removed"
 git push
