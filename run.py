@@ -1,44 +1,42 @@
 import sys
 sys.dont_write_bytecode = True  # disable writing .pyc files into **pycache**
 
+import os
 from flask import Flask, render_template, redirect, url_for, session, jsonify, abort, send_from_directory, request
 from authlib.integrations.flask_client import OAuth
-import os
-from dotenv import load_dotenv
 import logging
-import requests  # for Airtable API
+import csv  # for authenticated users logging
 import subprocess
-import csv
+import requests  # for Airtable API requests
+from dotenv import load_dotenv
 
 # CONFIGURATION
 load_dotenv()
 APP_SECRET = os.getenv('SESSION_SECRET')
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
-
-# Airtable settings
+# Airtable environment variables
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
 AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
 AIRTABLE_TABLE_ID = os.getenv('AIRTABLE_TABLE_ID')
 AIRTABLE_VIEW_NAME = os.getenv('AIRTABLE_VIEW_NAME')
-
 AUTH_USERS_CSV = os.getenv('AUTH_USERS')  # path to file for authenticated users logging
 TEMPLATE_FOLDER = os.getenv('TEMPLATE_FOLDER')
 CARDS_FOLDER = os.getenv('CARDS_BANK_FOLDER')
-
 if os.getenv('PORT') is None:
     raise SystemExit("PORT must be set in .env")
 PORT = int(os.getenv('PORT'))
 
+# Ensure required envs are set
 required_envs = {
     'SESSION_SECRET': APP_SECRET,
     'TEMPLATE_FOLDER': TEMPLATE_FOLDER,
     'CARDS_BANK_FOLDER': CARDS_FOLDER,
+    'AUTH_USERS': AUTH_USERS_CSV,
     'AIRTABLE_API_KEY': AIRTABLE_API_KEY,
     'AIRTABLE_BASE_ID': AIRTABLE_BASE_ID,
     'AIRTABLE_TABLE_ID': AIRTABLE_TABLE_ID,
     'AIRTABLE_VIEW_NAME': AIRTABLE_VIEW_NAME,
-    'AUTH_USERS': AUTH_USERS_CSV,
 }
 for name, val in required_envs.items():
     if not val:
@@ -48,87 +46,87 @@ for name, val in required_envs.items():
 werkzeug_logger = logging.getLogger('werkzeug')
 werkzeug_logger.setLevel(logging.CRITICAL)
 
+# Initialize Flask
 app = Flask(__name__, template_folder=TEMPLATE_FOLDER)
 app.secret_key = APP_SECRET
 
+# Initialize OAuth with explicit endpoints and JWKS URI to avoid missing metadata
 oauth = OAuth(app)
 google = oauth.register(
     name='google',
     client_id=GOOGLE_CLIENT_ID,
     client_secret=GOOGLE_CLIENT_SECRET,
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    client_kwargs={'scope': 'openid email profile'}
+    authorize_url='https://accounts.google.com/o/oauth2/v2/auth',  # explicit authorization endpoint
+    access_token_url='https://oauth2.googleapis.com/token',       # explicit token endpoint
+    api_base_url='https://openidconnect.googleapis.com/v1/',      # base URL for OIDC
+    userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',  # fetch user info
+    jwks_uri='https://www.googleapis.com/oauth2/v3/certs',        # JWKS URI for token validation
+    client_kwargs={'scope': 'openid email profile'}                # requested scopes
 )
 
-# UTILS
+# Airtable helper: persistent session for connection reuse
+airtable_session = requests.Session()
+airtable_session.headers.update({'Authorization': f'Bearer {AIRTABLE_API_KEY}'})
+API_URL = f'https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_ID}'
 
-def load_csv_data():
-    """Load data from Airtable and return list of records and list of column names"""
-    url = f'https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_ID}'
-    headers = {'Authorization': f'Bearer {AIRTABLE_API_KEY}'}
-    params = {}
-    if AIRTABLE_VIEW_NAME:
-        params['view'] = AIRTABLE_VIEW_NAME
-    all_records = []
+
+def fetch_airtable_records(filter_formula=None):
+    """Fetch records from Airtable with optional filter, using pagination."""
+    params = {'view': AIRTABLE_VIEW_NAME, 'pageSize': 100}
+    if filter_formula:
+        params['filterByFormula'] = filter_formula
+    records = []
     offset = None
     while True:
         if offset:
             params['offset'] = offset
-        response = requests.get(url, headers=headers, params=params)
+        response = airtable_session.get(API_URL, params=params)
         response.raise_for_status()
         data = response.json()
-        for rec in data.get('records', []):
-            # each rec['fields'] is a dict of column:value
-            all_records.append(rec.get('fields', {}))
+        records.extend(data.get('records', []))
         offset = data.get('offset')
         if not offset:
             break
-    # determine columns from first record (or empty)
-    columns = list(all_records[0].keys()) if all_records else []
-    return all_records, columns
+    return records
 
 
-def get_admin_emails(records):
-    """Extract set of admin emails from Airtable records"""
+def get_admin_emails():
+    """Extract set of admin emails by filtering only ADMIN rows in Airtable."""
+    records = fetch_airtable_records("AND({USER_TYPE}='ADMIN',{CARD_OWNER}!='')")
     admin_emails = set()
-    for row in records:
-        user_type = row.get('USER_TYPE', '').strip().upper()
-        card_owner = row.get('CARD_OWNER', '').strip().lower()
-        if user_type == 'ADMIN' and card_owner:
-            admin_emails.add(card_owner)
+    for rec in records:
+        owner = rec.get('fields', {}).get('CARD_OWNER', '').strip().lower()
+        if owner:
+            admin_emails.add(owner)
     return admin_emails
 
 
-def get_user_cards(email, records, columns):
-    """Filter records for given email and find matching card images"""
-    if 'CARD_ID' not in columns or 'CARD_OWNER' not in columns:
-        raise ValueError("Data must have 'CARD_ID' and 'CARD_OWNER' fields")
+def get_user_cards(email):
+    """Fetch and build card list only for the specified user."""
+    records = fetch_airtable_records(f"{{CARD_OWNER}}='{email}'")
     user_cards = []
-    for record in records:
-        if record.get('CARD_OWNER', '').lower() == email.lower():
-            card_id = record['CARD_ID']
-            for ext in ['.png', '.jpg', '.jpeg']:
-                fname = card_id + ext
-                path = os.path.join(CARDS_FOLDER, fname)
-                if os.path.exists(path):
-                    url = url_for('card_image', filename=fname)
-                    user_cards.append({
-                        'CARD_ID': card_id,
-                        'url': url,
-                        'transactions': record.get('TRANSACTIONS', ''),
-                        'balance': record.get('BALANCE', ''),
-                        'status': record.get('STATUS', '')
-                    })
-                    break
+    for rec in records:
+        fields = rec.get('fields', {})
+        card_id = fields.get('CARD_ID')
+        if not card_id:
+            continue
+        # find existing image file
+        for ext in ['.png', '.jpg', '.jpeg']:
+            fname = card_id + ext
+            path = os.path.join(CARDS_FOLDER, fname)
+            if os.path.exists(path):
+                url = url_for('card_image', filename=fname)
+                user_cards.append({
+                    'CARD_ID': card_id,
+                    'url': url,
+                    'transactions': fields.get('TRANSACTIONS', ''),
+                    'balance': fields.get('BALANCE', ''),
+                    'status': fields.get('STATUS', '')
+                })
+                break
     return user_cards
 
-# INITIAL SETUP (retain loading for other endpoints)
-SYSTEM_RECORDS, SYSTEM_COLUMNS = load_csv_data()
-ADMIN_EMAILS = get_admin_emails(SYSTEM_RECORDS)
-KEY_TO_CARD_ID = {row.get('CARD_URL', ''): row.get('CARD_ID', '') for row in SYSTEM_RECORDS}
-
 # ROUTES
-
 @app.route('/')
 def root():
     return redirect(url_for('login'))
@@ -149,7 +147,7 @@ def google_login():
 @app.route('/auth/google/callback')
 def authorize():
     try:
-        token = google.authorize_access_token()
+        token = google.authorize_access_token()  # fetch token and userinfo
         user_info = token.get('userinfo', {})
         email = user_info.get('email', '').strip().lower()
         if not email:
@@ -182,13 +180,9 @@ def profile():
     if not user:
         return redirect(url_for('login'))
     email = user['email']
-    records, columns = load_csv_data()
-    admin_emails = get_admin_emails(records)
+    admin_emails = get_admin_emails()
     is_admin = email in admin_emails
-    try:
-        cards = get_user_cards(email, records, columns)
-    except Exception:
-        cards = []
+    cards = get_user_cards(email)
     return render_template('profile.html', user=user, is_admin=is_admin, cards=cards)
 
 @app.route('/logout')
@@ -199,33 +193,40 @@ def logout():
 @app.route('/table')
 def table():
     user = session.get('user')
-    records, _ = load_csv_data()
-    admin_emails = get_admin_emails(records)
-    if not user or user['email'] not in admin_emails:
+    if not user:
+        return redirect(url_for('profile'))
+    admin_emails = get_admin_emails()
+    if user['email'] not in admin_emails:
         return redirect(url_for('profile'))
     return render_template('table.html', user=user)
 
 @app.route('/get_users')
 def get_users():
-    records, columns = load_csv_data()
-    return jsonify({'columns': columns, 'records': records})
+    try:
+        records = fetch_airtable_records()
+        columns = []
+        if records:
+            columns = list({key for r in records for key in r.get('fields', {})})
+        plain_records = [r.get('fields', {}) for r in records]
+        return jsonify({'columns': columns, 'records': plain_records})
+    except Exception as e:
+        return jsonify({'columns': [], 'records': [], 'error': str(e)}), 500
 
 @app.route('/api/cards')
 def api_cards():
     user = session.get('user')
     if not user:
         return jsonify({'error': 'Unauthorized'}), 401
-    email = user['email']
-    records, columns = load_csv_data()
-    cards = get_user_cards(email, records, columns)
+    cards = get_user_cards(user['email'])
     return jsonify(cards)
 
 @app.route('/card/<path:key>')
 def serve_card_page(key):
-    full_url = f'https://nakama.wfork.org/card/{key}'
-    if full_url not in KEY_TO_CARD_ID:
+    full_url = f'http://localhost:5001/card/{key}'
+    records = fetch_airtable_records(f"{{CARD_URL}}='{full_url}'")
+    if not records:
         abort(404)
-    card_id = KEY_TO_CARD_ID[full_url]
+    card_id = records[0].get('fields', {}).get('CARD_ID', '')
     image_url = next(
         (f'/card_image/{card_id + ext}' for ext in ['.png', '.jpg', '.jpeg']
          if os.path.exists(os.path.join(CARDS_FOLDER, card_id + ext))),
@@ -240,9 +241,10 @@ def card_image(filename):
 @app.route('/run_create_cards', methods=['POST'])
 def run_create_cards():
     user = session.get('user')
-    records, _ = load_csv_data()
-    admin_emails = get_admin_emails(records)
-    if not user or user['email'] not in admin_emails:
+    if not user:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+    admin_emails = get_admin_emails()
+    if user['email'] not in admin_emails:
         return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
     try:
         subprocess.run(
@@ -258,5 +260,5 @@ def page_not_found(e):
     return render_template('404.html'), 404
 
 if __name__ == '__main__':
-    print(f"- - https://nakama.wfork.org")
+    print(f"- - http://localhost:5001/")
     app.run(host='0.0.0.0', port=PORT, debug=False, use_reloader=False)

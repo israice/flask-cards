@@ -16,14 +16,10 @@
       background: linear-gradient(135deg, #f0f4f8, #ffffff);
       font-family: 'Segoe UI', sans-serif;
     }
-
-    /* Navbar styling */
     .navbar {
       background-color: #ffffff;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-
-    /* Center title and cards container */
     .vertical-cards-container {
       display: flex;
       flex-direction: column;
@@ -32,7 +28,6 @@
       overflow-y: auto;
       padding: 1rem;
     }
-
     .vertical-cards {
       display: flex;
       flex-direction: column;
@@ -40,8 +35,6 @@
       width: 100%;
       max-width: 360px;
     }
-
-    /* Card flip container with fixed height */
     .vertical-cards .card {
       perspective: 1000px;
       width: 100%;
@@ -49,7 +42,6 @@
       cursor: pointer;
       margin: 0 auto;
     }
-
     .vertical-cards .card-inner {
       position: relative;
       width: 100%;
@@ -60,13 +52,9 @@
       overflow: hidden;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-
-    /* Flip state */
     .vertical-cards .card.flipped .card-inner {
       transform: rotateY(180deg);
     }
-
-    /* Faces of the card */
     .card-face {
       position: absolute;
       top: 0;
@@ -86,20 +74,17 @@
       justify-content: center;
       padding: 1rem;
     }
-
     .card-img-top {
       width: 50%;
       height: 100%;
       object-fit: cover;
     }
-
     .card-body {
       flex: 1;
       display: flex;
       align-items: center;
       padding: 1rem;
     }
-
     .stats {
       display: flex;
       flex-direction: column;
@@ -127,7 +112,7 @@
     </div>
   </nav>
 
-  <!-- User's Cards Gallery with AJAX Auto-Refresh -->
+  <!-- User's Cards Gallery with localStorage + AJAX -->
   <div class="vertical-cards-container">
     <h3>Your Cards</h3>
     <div id="cards-container" class="vertical-cards"></div>
@@ -135,53 +120,72 @@
 
   <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- AJAX script for dynamic card loading every 10 seconds -->
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById('cards-container');
 
-      async function loadCards() {
-          try {
-              const res = await fetch('/api/cards'); // Fetch from new AJAX endpoint
-              if (!res.ok) throw new Error('Network response was not ok');
-              const cards = await res.json();
-              container.innerHTML = '';
-              cards.forEach(card => {
-                  const cardDiv = document.createElement('div');
-                  cardDiv.className = 'card';
-                  cardDiv.onclick = () => cardDiv.classList.toggle('flipped');
-                  cardDiv.innerHTML = `
-                      <div class="card-inner">
-                          <div class="card-face card-front">
-                              <img src="${card.url}" class="card-img-top" alt="Card ${card.CARD_ID}">
-                              <div class="card-body">
-                                  <div class="stats">
-                                      <div class="stat"><strong>Card ID:</strong> ${card.CARD_ID}</div>
-                                      <div class="stat"><strong>Transactions:</strong> ${card.transactions}</div>
-                                      <div class="stat"><strong>Balance:</strong> ${card.balance}</div>
-                                      <div class="stat"><strong>Status:</strong> ${card.status}</div>
-                                  </div>
-                              </div>
-                          </div>
-                          <div class="card-face card-back">
-                              <div class="stats">
-                                  <div class="stat"><strong>Card ID:</strong> ${card.CARD_ID}</div>
-                                  <div class="stat"><strong>Transactions:</strong> ${card.transactions}</div>
-                                  <div class="stat"><strong>Balance:</strong> ${card.balance}</div>
-                                  <div class="stat"><strong>Status:</strong> ${card.status}</div>
-                              </div>
-                          </div>
-                      </div>`;
-                  container.appendChild(cardDiv);
-              });
-          } catch (err) {
-              console.error('Failed to load cards:', err);
-          }
+      // Function to render cards into the container
+      function renderCards(cards) {
+        container.innerHTML = '';
+        cards.forEach(card => {
+          const cardDiv = document.createElement('div');
+          cardDiv.className = 'card';
+          cardDiv.onclick = () => cardDiv.classList.toggle('flipped');
+          cardDiv.innerHTML = `
+            <div class="card-inner">
+              <div class="card-face card-front">
+                <img src="${card.url}" class="card-img-top" alt="Card ${card.CARD_ID}">
+                <div class="card-body">
+                  <div class="stats">
+                    <div class="stat"><strong>Card ID:</strong> ${card.CARD_ID}</div>
+                    <div class="stat"><strong>Transactions:</strong> ${card.transactions}</div>
+                    <div class="stat"><strong>Balance:</strong> ${card.balance}</div>
+                    <div class="stat"><strong>Status:</strong> ${card.status}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-face card-back">
+                <div class="stats">
+                  <div class="stat"><strong>Card ID:</strong> ${card.CARD_ID}</div>
+                  <div class="stat"><strong>Transactions:</strong> ${card.transactions}</div>
+                  <div class="stat"><strong>Balance:</strong> ${card.balance}</div>
+                  <div class="stat"><strong>Status:</strong> ${card.status}</div>
+                </div>
+              </div>
+            </div>`;
+          container.appendChild(cardDiv);
+        });
       }
 
-      loadCards(); // Initial load
-      setInterval(loadCards, 3000); // Auto-refresh every 10 seconds
-  });
+      // Load from localStorage immediately
+      const saved = localStorage.getItem('cards');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          renderCards(parsed);
+        } catch (e) {
+          console.warn('Could not parse saved cards:', e);
+          localStorage.removeItem('cards');
+        }
+      }
+
+      // Fetch fresh data and update both UI and localStorage
+      async function loadCards() {
+        try {
+          const res = await fetch('/api/cards');
+          if (!res.ok) throw new Error('Network response was not ok');
+          const cards = await res.json();
+          renderCards(cards);
+          // Save latest state
+          localStorage.setItem('cards', JSON.stringify(cards));
+        } catch (err) {
+          console.error('Failed to load cards:', err);
+        }
+      }
+
+      loadCards();                   // Initial AJAX fetch
+      setInterval(loadCards, 10000); // Refresh every 10 seconds
+    });
   </script>
 </body>
 </html>

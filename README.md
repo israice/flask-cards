@@ -106,8 +106,10 @@
 ### v1.004
 - AR_add_new_to_airtable.py fixed with airtable from .env
 - run,py fixed path to table.html with airtable from .env
+- added airtable integretion
 
 ### v999 FUTURE PLANS
+- fix the special url, must works only once
 - run docker on linux pc2
 - fix domain on pc2 for this docker
 - add airtable
@@ -142,7 +144,7 @@ git log --oneline -n 10
 git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 git add .
-git commit -m "run,py fixed path to table.html with airtable from .env"
+git commit -m "added airtable integretion"
 git push
 
 </details>
