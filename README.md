@@ -9,6 +9,7 @@
   <summary>DEV Log</summary>
 
 ### v001
+- start date 2025.05.01
 - create flask with 2 html pages and google auth
 - upload to github
 ### v002
@@ -102,6 +103,9 @@
 - added toggle in readme.md 
 - create airtable with same headers as csv
 - create AR_add_new_to_airtable.py
+### v1.004
+- AR_add_new_to_airtable.py fixed with airtable from .env
+- run,py fixed path to table.html with airtable from .env
 
 ### v999 FUTURE PLANS
 - run docker on linux pc2
@@ -138,7 +142,7 @@ git log --oneline -n 10
 git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 git add .
-git commit -m "create AR_add_new_to_airtable.py"
+git commit -m "run,py fixed path to table.html with airtable from .env"
 git push
 
 </details>

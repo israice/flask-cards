@@ -6,26 +6,38 @@ from authlib.integrations.flask_client import OAuth
 import os
 from dotenv import load_dotenv
 import logging
-import csv
+import requests  # for Airtable API
 import subprocess
+import csv
 
 # CONFIGURATION
 load_dotenv()
 APP_SECRET = os.getenv('SESSION_SECRET')
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
-SYSTEM_FULL_DB_CSV = os.getenv('SYSTEM_FULL_DB_CSV')
+
+# Airtable settings
+AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+AIRTABLE_TABLE_ID = os.getenv('AIRTABLE_TABLE_ID')
+AIRTABLE_VIEW_NAME = os.getenv('AIRTABLE_VIEW_NAME')
+
 AUTH_USERS_CSV = os.getenv('AUTH_USERS')  # path to file for authenticated users logging
 TEMPLATE_FOLDER = os.getenv('TEMPLATE_FOLDER')
 CARDS_FOLDER = os.getenv('CARDS_BANK_FOLDER')
+
 if os.getenv('PORT') is None:
     raise SystemExit("PORT must be set in .env")
 PORT = int(os.getenv('PORT'))
+
 required_envs = {
     'SESSION_SECRET': APP_SECRET,
     'TEMPLATE_FOLDER': TEMPLATE_FOLDER,
     'CARDS_BANK_FOLDER': CARDS_FOLDER,
-    'SYSTEM_FULL_DB_CSV': SYSTEM_FULL_DB_CSV,
+    'AIRTABLE_API_KEY': AIRTABLE_API_KEY,
+    'AIRTABLE_BASE_ID': AIRTABLE_BASE_ID,
+    'AIRTABLE_TABLE_ID': AIRTABLE_TABLE_ID,
+    'AIRTABLE_VIEW_NAME': AIRTABLE_VIEW_NAME,
     'AUTH_USERS': AUTH_USERS_CSV,
 }
 for name, val in required_envs.items():
@@ -51,22 +63,33 @@ google = oauth.register(
 # UTILS
 
 def load_csv_data():
-    """Load CSV and return list of records and list of column names"""
-    if not os.path.exists(SYSTEM_FULL_DB_CSV):
-        return [], []
-    with open(SYSTEM_FULL_DB_CSV, newline='', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
-        records = []
-        for row in reader:
-            if None in row.values():
-                raise ValueError("CSV contains missing (None) values")
-            records.append(dict(row))
-        columns = reader.fieldnames or []
-    return records, columns
+    """Load data from Airtable and return list of records and list of column names"""
+    url = f'https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_ID}'
+    headers = {'Authorization': f'Bearer {AIRTABLE_API_KEY}'}
+    params = {}
+    if AIRTABLE_VIEW_NAME:
+        params['view'] = AIRTABLE_VIEW_NAME
+    all_records = []
+    offset = None
+    while True:
+        if offset:
+            params['offset'] = offset
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        data = response.json()
+        for rec in data.get('records', []):
+            # each rec['fields'] is a dict of column:value
+            all_records.append(rec.get('fields', {}))
+        offset = data.get('offset')
+        if not offset:
+            break
+    # determine columns from first record (or empty)
+    columns = list(all_records[0].keys()) if all_records else []
+    return all_records, columns
 
 
 def get_admin_emails(records):
-    """Extract set of admin emails from CSV records"""
+    """Extract set of admin emails from Airtable records"""
     admin_emails = set()
     for row in records:
         user_type = row.get('USER_TYPE', '').strip().upper()
@@ -79,14 +102,15 @@ def get_admin_emails(records):
 def get_user_cards(email, records, columns):
     """Filter records for given email and find matching card images"""
     if 'CARD_ID' not in columns or 'CARD_OWNER' not in columns:
-        raise ValueError("CSV must have 'CARD_ID' and 'CARD_OWNER' columns")
+        raise ValueError("Data must have 'CARD_ID' and 'CARD_OWNER' fields")
     user_cards = []
     for record in records:
-        if record.get('CARD_OWNER') == email:
+        if record.get('CARD_OWNER', '').lower() == email.lower():
             card_id = record['CARD_ID']
             for ext in ['.png', '.jpg', '.jpeg']:
                 fname = card_id + ext
-                if os.path.exists(os.path.join(CARDS_FOLDER, fname)):
+                path = os.path.join(CARDS_FOLDER, fname)
+                if os.path.exists(path):
                     url = url_for('card_image', filename=fname)
                     user_cards.append({
                         'CARD_ID': card_id,
@@ -107,17 +131,14 @@ KEY_TO_CARD_ID = {row.get('CARD_URL', ''): row.get('CARD_ID', '') for row in SYS
 
 @app.route('/')
 def root():
-    """Redirect to login page"""
     return redirect(url_for('login'))
 
 @app.route('/login')
 def login():
-    """Render login template"""
     return render_template('login.html')
 
 @app.route('/google-login')
 def google_login():
-    """Initiate Google OAuth flow"""
     next_page = request.args.get('next')
     if next_page:
         session['next_page'] = next_page
@@ -127,7 +148,6 @@ def google_login():
 
 @app.route('/auth/google/callback')
 def authorize():
-    """Handle Google OAuth callback and set session user"""
     try:
         token = google.authorize_access_token()
         user_info = token.get('userinfo', {})
@@ -158,12 +178,10 @@ def authorize():
 
 @app.route('/profile')
 def profile():
-    """Render user profile with cards and always show table button for admins"""
     user = session.get('user')
     if not user:
         return redirect(url_for('login'))
     email = user['email']
-    # Reload CSV data to reflect any changes from add_card_owner
     records, columns = load_csv_data()
     admin_emails = get_admin_emails(records)
     is_admin = email in admin_emails
@@ -175,15 +193,12 @@ def profile():
 
 @app.route('/logout')
 def logout():
-    """Clear session and redirect to login"""
     session.clear()
     return redirect(url_for('login'))
 
 @app.route('/table')
 def table():
-    """Render admin table view"""
     user = session.get('user')
-    # Ensure ADMIN_EMAILS is up-to-date
     records, _ = load_csv_data()
     admin_emails = get_admin_emails(records)
     if not user or user['email'] not in admin_emails:
@@ -192,13 +207,11 @@ def table():
 
 @app.route('/get_users')
 def get_users():
-    """Return fresh JSON with CSV data for AJAX updating"""
-    records, columns = load_csv_data()  # reload CSV on each request
+    records, columns = load_csv_data()
     return jsonify({'columns': columns, 'records': records})
 
 @app.route('/api/cards')
 def api_cards():
-    """Return JSON list of user cards for AJAX updating"""
     user = session.get('user')
     if not user:
         return jsonify({'error': 'Unauthorized'}), 401
@@ -209,7 +222,6 @@ def api_cards():
 
 @app.route('/card/<path:key>')
 def serve_card_page(key):
-    """Serve individual card page for adding card owner"""
     full_url = f'https://nakama.wfork.org/card/{key}'
     if full_url not in KEY_TO_CARD_ID:
         abort(404)
@@ -223,15 +235,11 @@ def serve_card_page(key):
 
 @app.route('/card_image/<filename>')
 def card_image(filename):
-    """Serve card image files"""
     return send_from_directory(CARDS_FOLDER, filename)
 
-# NEW ROUTE: Trigger card creation script
 @app.route('/run_create_cards', methods=['POST'])
 def run_create_cards():
-    """Run the A_run_create_cards.py script on button click"""
     user = session.get('user')
-    # Reload admin list to ensure up-to-date permissions
     records, _ = load_csv_data()
     admin_emails = get_admin_emails(records)
     if not user or user['email'] not in admin_emails:
@@ -247,7 +255,6 @@ def run_create_cards():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    """Render custom 404 page"""
     return render_template('404.html'), 404
 
 if __name__ == '__main__':

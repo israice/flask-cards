@@ -1,16 +1,34 @@
+#!/usr/bin/env python3
+from dotenv import load_dotenv
+import os
+import sys
 import csv
 import requests
 
-# ============ SETTINGS ============
-API_KEY   = 'pat6OSgFQuTQdWjIr.9bbd79557c984f0b123e8f4d6f696b3ee5d2cc2b675470c63f66c38f1d7d64c4'
-BASE_ID   = 'app8EMe8KlU5dSbaS'
-TABLE_ID  = 'tblusP2C8jO1S2a82'
-VIEW_NAME = 'viwiJ8BBei9vj2KJY'  # optional view filter
+# Load environment variables from .env file
+load_dotenv()
 
+# Retrieve Airtable configuration from environment
+API_KEY = os.getenv('AIRTABLE_API_KEY')
+BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+TABLE_ID = os.getenv('AIRTABLE_TABLE_ID')
+VIEW_NAME = os.getenv('AIRTABLE_VIEW_NAME')
+
+# Validate required environment variables
+if not API_KEY:
+    sys.exit("Error: AIRTABLE_API_KEY is not set in environment.")
+if not BASE_ID:
+    sys.exit("Error: AIRTABLE_BASE_ID is not set in environment.")
+if not TABLE_ID:
+    sys.exit("Error: AIRTABLE_TABLE_ID is not set in environment.")
+if not VIEW_NAME:
+    sys.exit("Error: AIRTABLE_VIEW_NAME is not set in environment.")
+
+# Airtable API endpoint and headers
 ENDPOINT = f'https://api.airtable.com/v0/{BASE_ID}/{TABLE_ID}'
-HEADERS  = {
+HEADERS = {
     'Authorization': f'Bearer {API_KEY}',
-    'Content-Type':  'application/json'
+    'Content-Type': 'application/json'
 }
 
 
@@ -53,22 +71,23 @@ def fetch_existing_and_blanks(id_field, session):
 
 def main():
     """Sync CSV data to Airtable: fill first blank record, then add new ones."""
-    # Read CSV, skip header row
-    with open(r'core\data\system_full_db.csv', 'r', encoding='utf-8', newline='') as f:
+    # Read CSV file, skip header row
+    csv_path = r'core\data\system_full_db.csv'
+    with open(csv_path, 'r', encoding='utf-8', newline='') as f:
         reader = csv.reader(f)
-        headers = next(reader)          # CSV header = field names
+        headers = next(reader)  # CSV header = field names
         rows = [row for row in reader if row]
 
-    key_field = headers[0]            # primary key field name
+    key_field = headers[0]  # primary key field name
 
-    # Prepare HTTP session
+    # Prepare HTTP session with headers
     session = requests.Session()
     session.headers.update(HEADERS)
 
     # Fetch existing IDs and blank record slots
     existing_map, blank_ids = fetch_existing_and_blanks(key_field, session)
 
-    to_update = []  # records to PATCH (first blank slot)
+    to_update = []  # records to PATCH (first blank slots)
     to_create = []  # records to POST (new entries)
 
     for idx, row in enumerate(rows):
@@ -86,13 +105,13 @@ def main():
         else:
             to_create.append({'fields': fields})
 
-    # Execute PATCH for updated records
+    # Execute PATCH for updated records in batches of 10
     for batch in chunked(to_update, 10):
         response = session.patch(ENDPOINT, json={'records': batch})
         if not response.ok:
             print(f"PATCH error: {response.status_code} {response.text}")
 
-    # Execute POST for new records
+    # Execute POST for new records in batches of 10
     for batch in chunked(to_create, 10):
         response = session.post(ENDPOINT, json={'records': batch})
         if not response.ok:
