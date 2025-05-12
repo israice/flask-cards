@@ -2,6 +2,8 @@
 - https://github.com/israice/flask-cards.git
 - collect cards with crypto suprise box
 
+![alt text](readme/main_login.png)
+![alt text](readme/card_login.png)
 
 ## DEV Log
 ### v001
@@ -94,6 +96,7 @@
 - add Dockerfile 
 - add requirements.txt
 - modify readme file for docker
+- added /readme/ with images for README.md
 
 ### v999 FUTURE PLANS
 - run docker on linux pc2
@@ -110,14 +113,13 @@ python run.py
 ## docker control
 ### stop docker
 docker-compose down
-docker-compose down --volumes --rmi all
 ### update docker
 docker-compose build
 ### run docker
 docker-compose up -d
 ### FAST
 docker-compose down; docker-compose build; docker-compose up -d
-docker-compose down --volumes --rmi all; docker-compose build; docker-compose up -d
+
 ## Git CHEATSHEET
 ### load last updates and replace existing local files
 git fetch origin; git reset --hard origin/master; git clean -fd
@@ -127,5 +129,5 @@ git log --oneline -n 10
 git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 git add .
-git commit -m "modify readme file for docker"
+git commit -m "added /readme/ with images for README.md"
 git push
