@@ -5,7 +5,9 @@
 ![alt text](readme/main_login.png)
 ![alt text](readme/card_login.png)
 
-## DEV Log
+<details>
+  <summary>DEV Log</summary>
+
 ### v001
 - create flask with 2 html pages and google auth
 - upload to github
@@ -97,6 +99,7 @@
 - add requirements.txt
 - modify readme file for docker
 - added /readme/ with images for README.md
+- added toggle in readme.md 
 
 ### v999 FUTURE PLANS
 - run docker on linux pc2
@@ -105,6 +108,10 @@
 - push created cards to airtable
 - airtable integretion
 - add stats to each card
+
+</details>
+
+
 
 
 ## run
@@ -129,5 +136,5 @@ git log --oneline -n 10
 git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 git add .
-git commit -m "added /readme/ with images for README.md"
+git commit -m "added toggle in readme.md"
 git push
