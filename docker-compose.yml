@@ -1,0 +1,16 @@
+services:
+  app:
+    # Build image from local Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Name of the container
+    container_name: NAKAMA_PROJECT
+    # Command to run your application
+    command: python run.py
+    # Expose and map port 5001
+    ports:
+      - "5001:5001"
+    # Load environment variables from .env
+    env_file:
+      - .env
