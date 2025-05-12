@@ -100,6 +100,8 @@
 - modify readme file for docker
 - added /readme/ with images for README.md
 - added toggle in readme.md 
+- create airtable with same headers as csv
+- create AR_add_new_to_airtable.py
 
 ### v999 FUTURE PLANS
 - run docker on linux pc2
@@ -111,8 +113,8 @@
 
 </details>
 
-
-
+<details>
+  <summary>DEV Commands</summary>
 
 ## run
 python run.py
@@ -130,11 +132,15 @@ docker-compose down; docker-compose build; docker-compose up -d
 ## Git CHEATSHEET
 ### load last updates and replace existing local files
 git fetch origin; git reset --hard origin/master; git clean -fd
-### выбери хэш среди получиных последних 10
+### select a hash from the last 10 commits
 git log --oneline -n 10
-### используй хэш для получения именно этого сахронения локально
+### use the hash to retrieve exactly that local state
 git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 git add .
-git commit -m "added toggle in readme.md"
+git commit -m "create AR_add_new_to_airtable.py"
 git push
+
+</details>
+
+
