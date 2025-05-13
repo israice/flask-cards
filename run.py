@@ -15,7 +15,6 @@ load_dotenv()
 APP_SECRET = os.getenv('SESSION_SECRET')
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
-# Airtable environment variables
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
 AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
 AIRTABLE_TABLE_ID = os.getenv('AIRTABLE_TABLE_ID')
@@ -50,25 +49,24 @@ werkzeug_logger.setLevel(logging.CRITICAL)
 app = Flask(__name__, template_folder=TEMPLATE_FOLDER)
 app.secret_key = APP_SECRET
 
-# Initialize OAuth with explicit endpoints and JWKS URI to avoid missing metadata
+# Initialize OAuth
 oauth = OAuth(app)
 google = oauth.register(
     name='google',
     client_id=GOOGLE_CLIENT_ID,
     client_secret=GOOGLE_CLIENT_SECRET,
-    authorize_url='https://accounts.google.com/o/oauth2/v2/auth',  # explicit authorization endpoint
-    access_token_url='https://oauth2.googleapis.com/token',       # explicit token endpoint
-    api_base_url='https://openidconnect.googleapis.com/v1/',      # base URL for OIDC
-    userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',  # fetch user info
-    jwks_uri='https://www.googleapis.com/oauth2/v3/certs',        # JWKS URI for token validation
-    client_kwargs={'scope': 'openid email profile'}                # requested scopes
+    authorize_url='https://accounts.google.com/o/oauth2/v2/auth',
+    access_token_url='https://oauth2.googleapis.com/token',
+    api_base_url='https://openidconnect.googleapis.com/v1/',
+    userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',
+    jwks_uri='https://www.googleapis.com/oauth2/v3/certs',
+    client_kwargs={'scope': 'openid email profile'}
 )
 
-# Airtable helper: persistent session for connection reuse
+# Airtable helper: persistent HTTP session
 airtable_session = requests.Session()
 airtable_session.headers.update({'Authorization': f'Bearer {AIRTABLE_API_KEY}'})
 API_URL = f'https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_ID}'
-
 
 def fetch_airtable_records(filter_formula=None):
     """Fetch records from Airtable with optional filter, using pagination."""
@@ -80,15 +78,14 @@ def fetch_airtable_records(filter_formula=None):
     while True:
         if offset:
             params['offset'] = offset
-        response = airtable_session.get(API_URL, params=params)
-        response.raise_for_status()
-        data = response.json()
+        resp = airtable_session.get(API_URL, params=params)
+        resp.raise_for_status()
+        data = resp.json()
         records.extend(data.get('records', []))
         offset = data.get('offset')
         if not offset:
             break
     return records
-
 
 def get_admin_emails():
     """Extract set of admin emails by filtering only ADMIN rows in Airtable."""
@@ -100,7 +97,6 @@ def get_admin_emails():
             admin_emails.add(owner)
     return admin_emails
 
-
 def get_user_cards(email):
     """Fetch and build card list only for the specified user."""
     records = fetch_airtable_records(f"{{CARD_OWNER}}='{email}'")
@@ -110,7 +106,6 @@ def get_user_cards(email):
         card_id = fields.get('CARD_ID')
         if not card_id:
             continue
-        # find existing image file
         for ext in ['.png', '.jpg', '.jpeg']:
             fname = card_id + ext
             path = os.path.join(CARDS_FOLDER, fname)
@@ -204,9 +199,12 @@ def table():
 def get_users():
     try:
         records = fetch_airtable_records()
-        columns = []
-        if records:
-            columns = list({key for r in records for key in r.get('fields', {})})
+        # If no records, return empty
+        if not records:
+            return jsonify({'columns': [], 'records': []})
+        # Preserve Airtable field order from first record
+        first_fields = records[0].get('fields', {})
+        columns = list(first_fields.keys())
         plain_records = [r.get('fields', {}) for r in records]
         return jsonify({'columns': columns, 'records': plain_records})
     except Exception as e:
@@ -222,11 +220,20 @@ def api_cards():
 
 @app.route('/card/<path:key>')
 def serve_card_page(key):
+    # Build full URL for lookup
     full_url = f'http://localhost:5001/card/{key}'
+    # Fetch record by URL
     records = fetch_airtable_records(f"{{CARD_URL}}='{full_url}'")
     if not records:
         abort(404)
-    card_id = records[0].get('fields', {}).get('CARD_ID', '')
+    record = records[0]
+    fields = record.get('fields', {})
+    owner = fields.get('CARD_OWNER', '').strip()
+    # Allow only if CARD_OWNER == "SYSTEM"
+    if owner != 'SYSTEM':
+        abort(404)
+    # Determine card image URL
+    card_id = fields.get('CARD_ID', '')
     image_url = next(
         (f'/card_image/{card_id + ext}' for ext in ['.png', '.jpg', '.jpeg']
          if os.path.exists(os.path.join(CARDS_FOLDER, card_id + ext))),
@@ -257,6 +264,7 @@ def run_create_cards():
 
 @app.errorhandler(404)
 def page_not_found(e):
+    # Render custom 404 page
     return render_template('404.html'), 404
 
 if __name__ == '__main__':

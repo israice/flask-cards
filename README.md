@@ -107,6 +107,11 @@
 - AR_add_new_to_airtable.py fixed with airtable from .env
 - run,py fixed path to table.html with airtable from .env
 - added airtable integretion
+### v1.005
+- removed button back from 404.html
+- in table.html changed sort order to same as in airtable
+- special links now working only with system owner
+
 
 ### v999 FUTURE PLANS
 - fix the special url, must works only once
@@ -144,8 +149,15 @@ git log --oneline -n 10
 git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 git add .
-git commit -m "added airtable integretion"
+git commit -m "special links now working only with system owner"
 git push
+
+
+
+
+
+
+
 
 </details>
 
