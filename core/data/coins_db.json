@@ -3,140 +3,140 @@
         "id": "bitcoin",
         "symbol": "btc",
         "name": "Bitcoin",
-        "market_cap": 2044009206337,
-        "current_price": 102943
+        "market_cap": 2070099781729,
+        "current_price": 104215
     },
     {
         "id": "ethereum",
         "symbol": "eth",
         "name": "Ethereum",
-        "market_cap": 301104922752,
-        "current_price": 2493.35
+        "market_cap": 325337854390,
+        "current_price": 2694.94
     },
     {
         "id": "ripple",
         "symbol": "xrp",
         "name": "XRP",
-        "market_cap": 151562481802,
-        "current_price": 2.6
+        "market_cap": 150232105928,
+        "current_price": 2.57
     },
     {
         "id": "binancecoin",
         "symbol": "bnb",
         "name": "BNB",
-        "market_cap": 97335186726,
-        "current_price": 667.2
+        "market_cap": 96950978015,
+        "current_price": 664.55
     },
     {
         "id": "solana",
         "symbol": "sol",
         "name": "Solana",
-        "market_cap": 90919525763,
-        "current_price": 174.91
+        "market_cap": 94823293874,
+        "current_price": 182.55
     },
     {
         "id": "dogecoin",
         "symbol": "doge",
         "name": "Dogecoin",
-        "market_cap": 34911614570,
-        "current_price": 0.234074
+        "market_cap": 35576714718,
+        "current_price": 0.238266
     },
     {
         "id": "cardano",
         "symbol": "ada",
         "name": "Cardano",
-        "market_cap": 29732529917,
-        "current_price": 0.824648
+        "market_cap": 29897886218,
+        "current_price": 0.829159
     },
     {
         "id": "tron",
         "symbol": "trx",
         "name": "TRON",
-        "market_cap": 26077021731,
-        "current_price": 0.275501
+        "market_cap": 25679580030,
+        "current_price": 0.270594
     },
     {
         "id": "staked-ether",
         "symbol": "steth",
         "name": "Lido Staked Ether",
-        "market_cap": 22767525799,
-        "current_price": 2489.87
+        "market_cap": 24474688127,
+        "current_price": 2681.42
     },
     {
         "id": "sui",
         "symbol": "sui",
         "name": "Sui",
-        "market_cap": 13279706411,
-        "current_price": 3.98
+        "market_cap": 13599500302,
+        "current_price": 4.07
     },
     {
         "id": "wrapped-bitcoin",
         "symbol": "wbtc",
         "name": "Wrapped Bitcoin",
-        "market_cap": 13235965454,
-        "current_price": 102844
+        "market_cap": 13364571366,
+        "current_price": 103754
     },
     {
         "id": "chainlink",
         "symbol": "link",
         "name": "Chainlink",
-        "market_cap": 11094700545,
-        "current_price": 16.88
-    },
-    {
-        "id": "avalanche-2",
-        "symbol": "avax",
-        "name": "Avalanche",
-        "market_cap": 10462190140,
-        "current_price": 25.01
+        "market_cap": 11550310580,
+        "current_price": 17.58
     },
     {
         "id": "wrapped-steth",
         "symbol": "wsteth",
         "name": "Wrapped stETH",
-        "market_cap": 10366019536,
-        "current_price": 2997.4
+        "market_cap": 11283288141,
+        "current_price": 3241.65
+    },
+    {
+        "id": "avalanche-2",
+        "symbol": "avax",
+        "name": "Avalanche",
+        "market_cap": 10799588514,
+        "current_price": 25.8
     },
     {
         "id": "stellar",
         "symbol": "xlm",
         "name": "Stellar",
-        "market_cap": 9941543426,
-        "current_price": 0.321202
+        "market_cap": 9784200149,
+        "current_price": 0.314842
     },
     {
         "id": "shiba-inu",
         "symbol": "shib",
         "name": "Shiba Inu",
-        "market_cap": 9476471001,
-        "current_price": 1.608e-05
+        "market_cap": 9622444600,
+        "current_price": 1.632e-05
     },
     {
         "id": "hedera-hashgraph",
         "symbol": "hbar",
         "name": "Hedera",
-        "market_cap": 9349920027,
-        "current_price": 0.221557
+        "market_cap": 9155958312,
+        "current_price": 0.216994
     },
     {
-        "id": "the-open-network",
-        "symbol": "ton",
-        "name": "Toncoin",
-        "market_cap": 8580714377,
-        "current_price": 3.45
-    },
-    {
-        "id": "bitcoin-cash",
-        "symbol": "bch",
-        "name": "Bitcoin Cash",
-        "market_cap": 8207280100,
-        "current_price": 413.48
+        "id": "pi-network",
+        "symbol": "pi",
+        "name": "Pi Network",
+        "market_cap": 8889757430,
+        "current_price": 1.25
     },
     {
         "id": "hyperliquid",
         "symbol": "hype",
         "name": "Hyperliquid",
-        "market_cap": 8189629553,
-        "current_price": 24.52
+        "market_cap": 8624756745,
+        "current_price": 25.84
+    },
+    {
+        "id": "the-open-network",
+        "symbol": "ton",
+        "name": "Toncoin",
+        "market_cap": 8460254314,
+        "current_price": 3.4
     }
 ]

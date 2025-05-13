@@ -120,7 +120,7 @@ ADMIN page
 - in table.html changed sort order to same as in airtable
 - special links now working only with system owner
 - README.md updated with images
-
+- domain fixed on laptop1
 
 
 ### v999 FUTURE PLANS
@@ -155,7 +155,7 @@ git log --oneline -n 10
 git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 git add .
-git commit -m "README.md updated with images"
+git commit -m "domain fixed on laptop1"
 git push
 
 

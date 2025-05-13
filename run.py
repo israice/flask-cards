@@ -2,7 +2,11 @@ import sys
 sys.dont_write_bytecode = True  # disable writing .pyc files into **pycache**
 
 import os
-from flask import Flask, render_template, redirect, url_for, session, jsonify, abort, send_from_directory, request
+from flask import (
+    Flask, render_template, redirect, url_for, session,
+    jsonify, abort, send_from_directory, request
+)
+from werkzeug.middleware.proxy_fix import ProxyFix
 from authlib.integrations.flask_client import OAuth
 import logging
 import csv  # for authenticated users logging
@@ -48,6 +52,12 @@ werkzeug_logger.setLevel(logging.CRITICAL)
 # Initialize Flask
 app = Flask(__name__, template_folder=TEMPLATE_FOLDER)
 app.secret_key = APP_SECRET
+
+# Trust proxy headers for correct scheme and host
+# This ensures url_for(..., _external=True) generates HTTPS URLs behind a proxy
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+# Force external URL generation to use HTTPS
+app.config['PREFERRED_URL_SCHEME'] = 'https'
 
 # Initialize OAuth
 oauth = OAuth(app)
@@ -132,6 +142,7 @@ def login():
 
 @app.route('/google-login')
 def google_login():
+    # Redirect to Google OAuth, preserving next-page information
     next_page = request.args.get('next')
     if next_page:
         session['next_page'] = next_page
@@ -146,7 +157,7 @@ def authorize():
         user_info = token.get('userinfo', {})
         email = user_info.get('email', '').strip().lower()
         if not email:
-            return redirect(url_for('login'))
+            return redirect(url_for('login', _external=True))
         session['user'] = {'email': email}
         next_page = session.pop('next_page', None)
         if next_page == 'add_card_owner':
@@ -161,19 +172,19 @@ def authorize():
                 )
             except subprocess.CalledProcessError:
                 pass
-            return redirect(url_for('profile'))
+            return redirect(url_for('profile', _external=True))
         if next_page and next_page in app.view_functions:
-            return redirect(url_for(next_page))
-        return redirect(url_for('profile'))
+            return redirect(url_for(next_page, _external=True))
+        return redirect(url_for('profile', _external=True))
     except Exception as e:
         print(f"Error in authorize: {e}")
-        return redirect(url_for('login'))
+        return redirect(url_for('login', _external=True))
 
 @app.route('/profile')
 def profile():
     user = session.get('user')
     if not user:
-        return redirect(url_for('login'))
+        return redirect(url_for('login', _external=True))
     email = user['email']
     admin_emails = get_admin_emails()
     is_admin = email in admin_emails
@@ -183,26 +194,24 @@ def profile():
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('login'))
+    return redirect(url_for('login', _external=True))
 
 @app.route('/table')
 def table():
     user = session.get('user')
     if not user:
-        return redirect(url_for('profile'))
+        return redirect(url_for('profile', _external=True))
     admin_emails = get_admin_emails()
     if user['email'] not in admin_emails:
-        return redirect(url_for('profile'))
+        return redirect(url_for('profile', _external=True))
     return render_template('table.html', user=user)
 
 @app.route('/get_users')
 def get_users():
     try:
         records = fetch_airtable_records()
-        # If no records, return empty
         if not records:
             return jsonify({'columns': [], 'records': []})
-        # Preserve Airtable field order from first record
         first_fields = records[0].get('fields', {})
         columns = list(first_fields.keys())
         plain_records = [r.get('fields', {}) for r in records]
@@ -220,19 +229,16 @@ def api_cards():
 
 @app.route('/card/<path:key>')
 def serve_card_page(key):
-    # Build full URL for lookup
-    full_url = f'http://localhost:5001/card/{key}'
-    # Fetch record by URL
-    records = fetch_airtable_records(f"{{CARD_URL}}='{full_url}'")
+    path = f'/card/{key}'  # match only path part
+    filter_formula = f"REGEX_MATCH({{CARD_URL}}, '.*{path}$')"
+    records = fetch_airtable_records(filter_formula)
     if not records:
         abort(404)
     record = records[0]
     fields = record.get('fields', {})
     owner = fields.get('CARD_OWNER', '').strip()
-    # Allow only if CARD_OWNER == "SYSTEM"
     if owner != 'SYSTEM':
         abort(404)
-    # Determine card image URL
     card_id = fields.get('CARD_ID', '')
     image_url = next(
         (f'/card_image/{card_id + ext}' for ext in ['.png', '.jpg', '.jpeg']
@@ -264,9 +270,9 @@ def run_create_cards():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    # Render custom 404 page
     return render_template('404.html'), 404
 
 if __name__ == '__main__':
-    print(f"- - http://localhost:5001/")
+    # print(f"- - http://localhost:5001/")
+    print(f"- - https://nakama.wfork.org/")
     app.run(host='0.0.0.0', port=PORT, debug=False, use_reloader=False)
