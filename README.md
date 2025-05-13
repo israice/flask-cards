@@ -2,8 +2,16 @@
 - https://github.com/israice/flask-cards.git
 - collect cards with crypto suprise box
 
+Main login page
 ![alt text](readme/main_login.png)
+Add owner to card
 ![alt text](readme/card_login.png)
+USER profile page
+![alt text](readme/user_profile_page.png)
+ADMIN profile page
+![alt text](readme/admin_profile_page.png)
+ADMIN page
+![alt text](readme/admin_page.png)
 
 <details>
   <summary>DEV Log</summary>
@@ -111,16 +119,14 @@
 - removed button back from 404.html
 - in table.html changed sort order to same as in airtable
 - special links now working only with system owner
+- README.md updated with images
+
 
 
 ### v999 FUTURE PLANS
-- fix the special url, must works only once
-- run docker on linux pc2
-- fix domain on pc2 for this docker
-- add airtable
-- push created cards to airtable
-- airtable integretion
 - add stats to each card
+- fix domain on pc2 and laptop1 for this docker
+- run docker on linux pc2
 
 </details>
 
@@ -149,7 +155,7 @@ git log --oneline -n 10
 git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 git add .
-git commit -m "special links now working only with system owner"
+git commit -m "README.md updated with images"
 git push
 
 
