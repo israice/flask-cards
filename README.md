@@ -121,6 +121,7 @@ ADMIN page
 - special links now working only with system owner
 - README.md updated with images
 - domain fixed on laptop1
+- domain on docker fixed
 
 
 ### v999 FUTURE PLANS
@@ -139,12 +140,10 @@ python run.py
 ## docker control
 ### stop docker
 docker-compose down
-### update docker
-docker-compose build
 ### run docker
 docker-compose up -d
 ### FAST
-docker-compose down; docker-compose build; docker-compose up -d
+docker-compose down; docker-compose up -d
 
 ## Git CHEATSHEET
 ### load last updates and replace existing local files
@@ -155,7 +154,7 @@ git log --oneline -n 10
 git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 git add .
-git commit -m "domain fixed on laptop1"
+git commit -m "domain on docker fixed"
 git push
 
 
