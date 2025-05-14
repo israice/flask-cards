@@ -141,6 +141,8 @@ python run.py
 ### stop docker
 docker-compose down
 ### run docker
+docker build .
+### run docker
 docker-compose up -d
 ### FAST
 docker-compose down; docker-compose up -d
@@ -154,7 +156,7 @@ git log --oneline -n 10
 git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 git add .
-git commit -m "domain on docker fixed"
+git commit -m "domain on docker fixed 2"
 git push
 
 

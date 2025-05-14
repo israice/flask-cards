@@ -1,14 +1,14 @@
 services:
-  app:
+  flask_app:
     build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: NAKAMA_PROJECT
+      context: ./
+    container_name: flask_app
     command: python run.py
+    volumes:
+      - ./:/app
     ports:
       - "5001:5001"
     env_file:
       - .env
-    volumes:
-      # монтируем весь проект внутрь контейнера
-      - ./:/app
+    environment:
+      - FLASK_ENV=development
