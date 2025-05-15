@@ -100,10 +100,15 @@
           // fill in card data
           const img = clone.querySelector('.card-img-top');
           if (img) img.src = card.url;
+          clone.querySelectorAll('.card-chain').forEach(el => el.textContent = card.CARD_CHAIN);
+          clone.querySelectorAll('.card-name').forEach(el => el.textContent = card.CARD_NAME);
+          clone.querySelectorAll('.card-theme').forEach(el => el.textContent = card.CARD_THEME);
+          clone.querySelectorAll('.card-type').forEach(el => el.textContent = card.CARD_TYPE);
+          clone.querySelectorAll('.card-coins').forEach(el => el.textContent = card.CARD_COINS);
+          clone.querySelectorAll('.card-ammount').forEach(el => el.textContent = card.USD_AMMOUNT);
           clone.querySelectorAll('.card-id').forEach(el => el.textContent = card.CARD_ID);
-          clone.querySelectorAll('.card-transactions').forEach(el => el.textContent = card.transactions);
-          clone.querySelectorAll('.card-balance').forEach(el => el.textContent = card.balance);
-          clone.querySelectorAll('.card-status').forEach(el => el.textContent = card.status);
+          clone.querySelectorAll('.pack-id').forEach(el => el.textContent = card.PACK_ID);
+          clone.querySelectorAll('.card-date').forEach(el => el.textContent = card.CARD_DATE);
 
           // flip on click
           const cardEl = clone.querySelector('.card');

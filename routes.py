@@ -48,8 +48,6 @@ def get_user_cards(email):
         cid = rec.get('CARD_ID')
         if not cid:
             continue
-
-        # >>> changed to use CARD_STATUS safely (may be None)
         raw_status = rec.get('CARD_STATUS')
         status = raw_status.strip() if raw_status else ''
 
@@ -60,11 +58,17 @@ def get_user_cards(email):
             if os.path.exists(path):
                 url = url_for('main.card_image', filename=fname)
                 cards.append({
-                    'CARD_ID': cid,
                     'url': url,
-                    'transactions': rec.get('CARD_COINS', ''),
-                    'balance': rec.get('USD_AMMOUNT', ''),
-                    'status': status
+                    'CARD_ID': cid,
+                    'status': status,
+                    'CARD_CHAIN': rec.get('CARD_CHAIN'),
+                    'CARD_NAME': rec.get('CARD_NAME'),
+                    'CARD_THEME': rec.get('CARD_THEME'),
+                    'CARD_TYPE': rec.get('CARD_TYPE'),
+                    'CARD_COINS': rec.get('CARD_COINS'),
+                    'USD_AMMOUNT': rec.get('USD_AMMOUNT'),
+                    'PACK_ID': rec.get('PACK_ID'),
+                    'CARD_DATE': rec.get('CARD_DATE'),
                 })
                 break
     return cards
