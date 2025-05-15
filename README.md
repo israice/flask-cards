@@ -181,7 +181,7 @@ ADMIN page
 - fix from airtable back to system_full_db.csv
 - add routes.py 
 - add card_1.html
-
+- created card_2.html and card_3.html
 
 ### v999 FUTURE PLANS
 
@@ -233,7 +233,7 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 
 git add .
-git commit -m "add card_1.html"
+git commit -m "created card_2.html and card_3.html"
 git push
 
 </details>
