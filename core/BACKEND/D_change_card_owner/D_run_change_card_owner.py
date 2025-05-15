@@ -8,7 +8,6 @@ import importlib
 scripts = [
     "DA_move_auth_user_to_db.py",
     "DB_update_user_type_for_admins_in_db.py",
-    "DC_add_new_to_airtable.py",
 ]
 
 for script_path in scripts:

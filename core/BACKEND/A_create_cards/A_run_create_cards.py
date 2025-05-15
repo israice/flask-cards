@@ -23,7 +23,6 @@ scripts = [
     "AO_create_qr_files.py",
     "AP_create_images.py",
     "AQ_create_images_names.py",
-    "AR_add_new_to_airtable.py",
 ]
 
 for script_path in scripts:
