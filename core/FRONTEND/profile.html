@@ -28,73 +28,6 @@
       overflow-y: auto;
       padding: 1rem;
     }
-    .vertical-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      width: 100%;
-      max-width: 360px;
-    }
-    .vertical-cards .card {
-      perspective: 1000px;
-      width: 100%;
-      height: 200px;
-      cursor: pointer;
-      margin: 0 auto;
-    }
-    .vertical-cards .card-inner {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      transform-style: preserve-3d;
-      transition: transform 0.6s;
-      border-radius: 0.5rem;
-      overflow: hidden;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    .vertical-cards .card.flipped .card-inner {
-      transform: rotateY(180deg);
-    }
-    .card-face {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      display: flex;
-    }
-    .card-front {
-      flex-direction: row;
-    }
-    .card-back {
-      transform: rotateY(180deg);
-      background-color: #ffffff;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-    }
-    .card-img-top {
-      width: 50%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .card-body {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      padding: 1rem;
-    }
-    .stats {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      color: #333;
-    }
-    .stats .stat strong {
-      margin-right: 0.25rem;
-    }
   </style>
 </head>
 <body>
@@ -118,73 +51,67 @@
     <div id="cards-container" class="vertical-cards"></div>
   </div>
 
+  <!-- Hidden container for loaded fragment -->
+  <div id="card-template-container" style="display:none;"></div>
+
   <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById('cards-container');
+      const tmplContainer = document.getElementById('card-template-container');
+      let cardTemplate;
 
-      // Function to render cards into the container
+      // Load card_1.html (styles + <template>)
+      fetch('/card_1.html')
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to load card template');
+          return res.text();
+        })
+        .then(html => {
+          tmplContainer.innerHTML = html;
+          cardTemplate = document.getElementById('card-template').content;
+          initialize();
+        })
+        .catch(err => console.error(err));
+
+      // Render function
       function renderCards(cards) {
         container.innerHTML = '';
         cards.forEach(card => {
-          const cardDiv = document.createElement('div');
-          cardDiv.className = 'card';
-          cardDiv.onclick = () => cardDiv.classList.toggle('flipped');
-          cardDiv.innerHTML = `
-            <div class="card-inner">
-              <div class="card-face card-front">
-                <img src="${card.url}" class="card-img-top" alt="Card ${card.CARD_ID}">
-                <div class="card-body">
-                  <div class="stats">
-                    <div class="stat"><strong>Card ID:</strong> ${card.CARD_ID}</div>
-                    <div class="stat"><strong>Transactions:</strong> ${card.transactions}</div>
-                    <div class="stat"><strong>Balance:</strong> ${card.balance}</div>
-                    <div class="stat"><strong>Status:</strong> ${card.status}</div>
-                  </div>
-                </div>
-              </div>
-              <div class="card-face card-back">
-                <div class="stats">
-                  <div class="stat"><strong>Card ID:</strong> ${card.CARD_ID}</div>
-                  <div class="stat"><strong>Transactions:</strong> ${card.transactions}</div>
-                  <div class="stat"><strong>Balance:</strong> ${card.balance}</div>
-                  <div class="stat"><strong>Status:</strong> ${card.status}</div>
-                </div>
-              </div>
-            </div>`;
-          container.appendChild(cardDiv);
+          const clone = cardTemplate.cloneNode(true);
+          clone.querySelector('.card-img-top').src = card.url;
+          clone.querySelectorAll('.card-id').forEach(el => el.textContent = card.CARD_ID);
+          clone.querySelectorAll('.card-transactions').forEach(el => el.textContent = card.transactions);
+          clone.querySelectorAll('.card-balance').forEach(el => el.textContent = card.balance);
+          clone.querySelectorAll('.card-status').forEach(el => el.textContent = card.status);
+          const cardEl = clone.querySelector('.card');
+          cardEl.onclick = () => cardEl.classList.toggle('flipped');
+          container.appendChild(clone);
         });
       }
 
-      // Load from localStorage immediately
-      const saved = localStorage.getItem('cards');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          renderCards(parsed);
-        } catch (e) {
-          console.warn('Could not parse saved cards:', e);
-          localStorage.removeItem('cards');
+      // Init: restore from localStorage, then poll API
+      function initialize() {
+        const saved = localStorage.getItem('cards');
+        if (saved) {
+          try { renderCards(JSON.parse(saved)); }
+          catch { localStorage.removeItem('cards'); }
         }
-      }
-
-      // Fetch fresh data and update both UI and localStorage
-      async function loadCards() {
-        try {
-          const res = await fetch('/api/cards');
-          if (!res.ok) throw new Error('Network response was not ok');
-          const cards = await res.json();
-          renderCards(cards);
-          // Save latest state
-          localStorage.setItem('cards', JSON.stringify(cards));
-        } catch (err) {
-          console.error('Failed to load cards:', err);
+        async function loadCards() {
+          try {
+            const res = await fetch('/api/cards');
+            if (!res.ok) throw new Error('Network response was not ok');
+            const cards = await res.json();
+            renderCards(cards);
+            localStorage.setItem('cards', JSON.stringify(cards));
+          } catch (err) {
+            console.error('Failed to load cards:', err);
+          }
         }
+        loadCards();
+        setInterval(loadCards, 10000);
       }
-
-      loadCards();                   // Initial AJAX fetch
-      setInterval(loadCards, 10000); // Refresh every 10 seconds
     });
   </script>
 </body>

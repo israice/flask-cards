@@ -15,7 +15,6 @@ def load_records_from_csv():
         reader = csv.DictReader(f)
         return list(reader)
 
-
 def load_whitelist(path):
     if not os.path.exists(path):
         return set()
@@ -25,7 +24,6 @@ def load_whitelist(path):
         if len(rows) < 2:
             return set()
         return {r[0].strip().lower() for r in rows[1:]}
-
 
 def determine_user_is_admin(email):
     email = email.strip().lower()
@@ -40,7 +38,6 @@ def determine_user_is_admin(email):
         writer = csv.writer(f)
         writer.writerow([email])
     return False
-
 
 def get_user_cards(email):
     records = load_records_from_csv()
@@ -68,6 +65,7 @@ def get_user_cards(email):
     return cards
 
 # ROUTES
+
 @bp.route('/')
 def root():
     return redirect(url_for('main.login'))
@@ -89,26 +87,29 @@ def google_login():
 def authorize():
     try:
         token = current_app.google.authorize_access_token()
-        user_info = token.get('userinfo',{})
-        email = user_info.get('email','').strip().lower()
+        user_info = token.get('userinfo', {})
+        email = user_info.get('email', '').strip().lower()
         if not email:
-            return redirect(url_for('main.login',_external=True))
-        session['user'] = {'email':email}
-        np = session.pop('next_page',None)
-        if np=='add_card_owner' and current_app.config['AUTH_USERS_CSV']:
-            os.makedirs(os.path.dirname(current_app.config['AUTH_USERS_CSV']),exist_ok=True)
-            with open(current_app.config['AUTH_USERS_CSV'],'a',newline='',encoding='utf-8') as f:
-                csv.writer(f).writerow([email,session.pop('ref_url','')])
+            return redirect(url_for('main.login', _external=True))
+        session['user'] = {'email': email}
+        np = session.pop('next_page', None)
+        if np == 'add_card_owner' and current_app.config.get('AUTH_USERS_CSV'):
+            os.makedirs(os.path.dirname(current_app.config['AUTH_USERS_CSV']), exist_ok=True)
+            with open(current_app.config['AUTH_USERS_CSV'], 'a', newline='', encoding='utf-8') as f:
+                csv.writer(f).writerow([email, session.pop('ref_url', '')])
             try:
-                subprocess.run(['python','core/BACKEND/D_change_card_owner/D_run_change_card_owner.py'],check=True)
+                subprocess.run(
+                    ['python', 'core/BACKEND/D_change_card_owner/D_run_change_card_owner.py'],
+                    check=True
+                )
             except subprocess.CalledProcessError:
                 pass
-            return redirect(url_for('main.profile',_external=True))
+            return redirect(url_for('main.profile', _external=True))
         if np and np in current_app.view_functions:
-            return redirect(url_for(np,_external=True))
-        return redirect(url_for('main.profile',_external=True))
+            return redirect(url_for(np, _external=True))
+        return redirect(url_for('main.profile', _external=True))
     except:
-        return redirect(url_for('main.login',_external=True))
+        return redirect(url_for('main.login', _external=True))
 
 @bp.route('/profile')
 def profile():
@@ -116,9 +117,12 @@ def profile():
     if not user:
         return redirect(url_for('main.login'))
     email = user['email']
-    return render_template('profile.html', user=user,
-                           is_admin=determine_user_is_admin(email),
-                           cards=get_user_cards(email))
+    return render_template(
+        'profile.html',
+        user=user,
+        is_admin=determine_user_is_admin(email),
+        cards=get_user_cards(email)
+    )
 
 @bp.route('/logout')
 def logout():
@@ -127,56 +131,74 @@ def logout():
 
 @bp.route('/table')
 def table():
-    user=session.get('user')
+    user = session.get('user')
     if not user or not determine_user_is_admin(user['email']):
         return redirect(url_for('main.profile'))
-    return render_template('table.html',user=user)
+    return render_template('table.html', user=user)
 
 @bp.route('/get_users')
 def get_users():
     try:
-        recs=load_records_from_csv()
+        recs = load_records_from_csv()
         if not recs:
-            return jsonify({'columns':[],'records':[]})
-        return jsonify({'columns':list(recs[0].keys()),'records':recs})
+            return jsonify({'columns': [], 'records': []})
+        return jsonify({'columns': list(recs[0].keys()), 'records': recs})
     except Exception as e:
-        return jsonify({'columns':[],'records':[],'error':str(e)}),500
+        return jsonify({'columns': [], 'records': [], 'error': str(e)}), 500
 
 @bp.route('/api/cards')
 def api_cards():
-    user=session.get('user')
+    user = session.get('user')
     if not user:
-        return jsonify({'error':'Unauthorized'}),401
+        return jsonify({'error': 'Unauthorized'}), 401
     return jsonify(get_user_cards(user['email']))
 
 @bp.route('/card/<path:key>')
 def serve_card_page(key):
-    suffix=f'/card/{key}'
-    match=next((r for r in load_records_from_csv() if r.get('CARD_URL','').endswith(suffix)),None)
-    if not match or match.get('CARD_OWNER')!='SYSTEM': abort(404)
-    cid=match.get('CARD_ID','')
-    url=None
+    suffix = f'/card/{key}'
+    match = next(
+        (r for r in load_records_from_csv() if r.get('CARD_URL','').endswith(suffix)),
+        None
+    )
+    if not match or match.get('CARD_OWNER') != 'SYSTEM':
+        abort(404)
+    cid = match.get('CARD_ID','')
+    url = None
     for ext in ['.png','.jpg','.jpeg']:
-        f='%s%s'%(cid,ext)
-        p=os.path.join(current_app.config['CARDS_FOLDER'],f)
-        if os.path.exists(p): url=url_for('main.card_image',filename=f);break
-    return render_template('add_card_owner.html',image_url=url)
+        fname = f'{cid}{ext}'
+        p = os.path.join(current_app.config['CARDS_FOLDER'], fname)
+        if os.path.exists(p):
+            url = url_for('main.card_image', filename=fname)
+            break
+    return render_template('add_card_owner.html', image_url=url)
 
 @bp.route('/card_image/<filename>')
 def card_image(filename):
-    return send_from_directory(current_app.config['CARDS_FOLDER'],filename)
+    return send_from_directory(current_app.config['CARDS_FOLDER'], filename)
 
-@bp.route('/run_create_cards',methods=['POST'])
+@bp.route('/run_create_cards', methods=['POST'])
 def run_create_cards():
-    user=session.get('user')
+    user = session.get('user')
     if not user or not determine_user_is_admin(user['email']):
-        return jsonify({'status':'error','message':'Unauthorized'}),401
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
     try:
-        subprocess.run(['python',os.path.join('core','BACKEND','A_create_cards','A_run_create_cards.py')],check=True)
-        return jsonify({'status':'success'})
+        subprocess.run(
+            ['python', os.path.join('core','BACKEND','A_create_cards','A_run_create_cards.py')],
+            check=True
+        )
+        return jsonify({'status': 'success'})
     except subprocess.CalledProcessError as e:
-        return jsonify({'status':'error','message':str(e)}),500
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @bp.errorhandler(404)
 def handle_404(e):
-    return render_template('404.html'),404
+    return render_template('404.html'), 404
+
+# New route: serve the card template fragment (card_1.html)
+@bp.route('/card_1.html')
+def card_fragment():
+    """
+    Serve the HTML & CSS fragment for client-side card rendering.
+    """
+    fragment_dir = os.path.join(current_app.root_path, 'core', 'FRONTEND')
+    return send_from_directory(fragment_dir, 'card_1.html')
