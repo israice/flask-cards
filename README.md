@@ -182,6 +182,7 @@ ADMIN page
 - add routes.py 
 - add card_1.html
 - created card_2.html and card_3.html
+- added ccorect row in card_1, card_2, card_3  
 
 ### v999 FUTURE PLANS
 
@@ -233,7 +234,7 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 
 git add .
-git commit -m "created card_2.html and card_3.html"
+git commit -m "added ccorect row in card_1, card_2, card_3"
 git push
 
 </details>

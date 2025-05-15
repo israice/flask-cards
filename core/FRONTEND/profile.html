@@ -51,7 +51,7 @@
     <div id="cards-container" class="vertical-cards"></div>
   </div>
 
-  <!-- Hidden container for loaded fragment -->
+  <!-- Hidden container for loaded fragments -->
   <div id="card-template-container" style="display:none;"></div>
 
   <!-- Bootstrap JS Bundle -->
@@ -60,33 +60,55 @@
     document.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById('cards-container');
       const tmplContainer = document.getElementById('card-template-container');
-      let cardTemplate;
+      const templates = {};
 
-      // Load card_1.html (styles + <template>)
-      fetch('/card_1.html')
-        .then(res => {
-          if (!res.ok) throw new Error('Failed to load card template');
-          return res.text();
-        })
-        .then(html => {
-          tmplContainer.innerHTML = html;
-          cardTemplate = document.getElementById('card-template').content;
-          initialize();
-        })
-        .catch(err => console.error(err));
+      // Load all three card templates based on status
+      function loadTemplates() {
+        const mapping = {
+          'STATUS_1': '/card_1.html',
+          'STATUS_2': '/card_2.html',
+          'STATUS_3': '/card_3.html'
+        };
+        const promises = Object.entries(mapping).map(([status, url]) =>
+          fetch(url)
+            .then(res => {
+              if (!res.ok) throw new Error(`Failed to load ${url}`);
+              return res.text();
+            })
+            .then(html => {
+              // parse fragment to extract the <template>
+              const div = document.createElement('div');
+              div.innerHTML = html;
+              const tmpl = div.querySelector('template').content;
+              templates[status] = tmpl;
+              // also append styles to page once
+              const style = div.querySelector('style');
+              if (style) document.head.appendChild(style.cloneNode(true));
+            })
+        );
+        return Promise.all(promises);
+      }
 
       // Render function
       function renderCards(cards) {
         container.innerHTML = '';
         cards.forEach(card => {
-          const clone = cardTemplate.cloneNode(true);
-          clone.querySelector('.card-img-top').src = card.url;
+          // choose template by status, fallback to STATUS_1
+          const tmplContent = templates[card.status] || templates['STATUS_1'];
+          const clone = tmplContent.cloneNode(true);
+
+          // fill in card data
+          const img = clone.querySelector('.card-img-top');
+          if (img) img.src = card.url;
           clone.querySelectorAll('.card-id').forEach(el => el.textContent = card.CARD_ID);
           clone.querySelectorAll('.card-transactions').forEach(el => el.textContent = card.transactions);
           clone.querySelectorAll('.card-balance').forEach(el => el.textContent = card.balance);
           clone.querySelectorAll('.card-status').forEach(el => el.textContent = card.status);
+
+          // flip on click
           const cardEl = clone.querySelector('.card');
-          cardEl.onclick = () => cardEl.classList.toggle('flipped');
+          if (cardEl) cardEl.onclick = () => cardEl.classList.toggle('flipped');
+
           container.appendChild(clone);
         });
       }
@@ -95,8 +117,11 @@
       function initialize() {
         const saved = localStorage.getItem('cards');
         if (saved) {
-          try { renderCards(JSON.parse(saved)); }
-          catch { localStorage.removeItem('cards'); }
+          try {
+            renderCards(JSON.parse(saved));
+          } catch {
+            localStorage.removeItem('cards');
+          }
         }
         async function loadCards() {
           try {
@@ -110,8 +135,13 @@
           }
         }
         loadCards();
-        setInterval(loadCards, 10000);
+        setInterval(loadCards, 5000);
       }
+
+      // Load templates first, then initialize
+      loadTemplates()
+        .then(initialize)
+        .catch(err => console.error(err));
     });
   </script>
 </body>

@@ -48,6 +48,11 @@ def get_user_cards(email):
         cid = rec.get('CARD_ID')
         if not cid:
             continue
+
+        # >>> changed to use CARD_STATUS safely (may be None)
+        raw_status = rec.get('CARD_STATUS')
+        status = raw_status.strip() if raw_status else ''
+
         for ext in ['.png', '.jpg', '.jpeg']:
             fname = cid + ext
             folder = current_app.config['CARDS_FOLDER']
@@ -57,9 +62,9 @@ def get_user_cards(email):
                 cards.append({
                     'CARD_ID': cid,
                     'url': url,
-                    'transactions': rec.get('CARD_COINS',''),
-                    'balance': rec.get('USD_AMMOUNT',''),
-                    'status': rec.get('CARD_TYPE','')
+                    'transactions': rec.get('CARD_COINS', ''),
+                    'balance': rec.get('USD_AMMOUNT', ''),
+                    'status': status
                 })
                 break
     return cards
@@ -194,11 +199,19 @@ def run_create_cards():
 def handle_404(e):
     return render_template('404.html'), 404
 
-# New route: serve the card template fragment (card_1.html)
+# Serve the client-side fragments
+
 @bp.route('/card_1.html')
 def card_fragment():
-    """
-    Serve the HTML & CSS fragment for client-side card rendering.
-    """
     fragment_dir = os.path.join(current_app.root_path, 'core', 'FRONTEND')
     return send_from_directory(fragment_dir, 'card_1.html')
+
+@bp.route('/card_2.html')
+def card2_fragment():
+    fragment_dir = os.path.join(current_app.root_path, 'core', 'FRONTEND')
+    return send_from_directory(fragment_dir, 'card_2.html')
+
+@bp.route('/card_3.html')
+def card3_fragment():
+    fragment_dir = os.path.join(current_app.root_path, 'core', 'FRONTEND')
+    return send_from_directory(fragment_dir, 'card_3.html')
