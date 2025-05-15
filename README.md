@@ -179,7 +179,7 @@ ADMIN page
 ### v1.006
 
 - fix from airtable back to system_full_db.csv
-
+- add routes.py 
 
 
 ### v999 FUTURE PLANS
@@ -232,7 +232,7 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 
 git add .
-git commit -m "fix from airtable back to system_full_db.csv"
+git commit -m "add routes.py"
 git push
 
 </details>
