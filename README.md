@@ -189,6 +189,7 @@ ADMIN page
 ### v1.007
 
 - card_1.html stats fixed
+- fixed both colms in card_1.html
 
 
 
@@ -242,7 +243,7 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 
 git add .
-git commit -m "card_1.html stats fixed"
+git commit -m "fixed both colms in card_1.html"
 git push
 
 </details>

@@ -63,7 +63,7 @@
       /* label cell */
       width: 3rem;             /* English: fixed width for label */
       text-align: center;
-      padding: 0 0.1rem;
+      padding-right: 0.25rem;
     }
     .stat-coins td:nth-child(2) {
       /* icon cell */
@@ -74,7 +74,7 @@
     .stat-coins td:nth-child(3) {
       /* COIN text cell */
       text-align: left;
-      padding: 0 0.1rem;   /* English: small gap between icon and text */
+      padding-left: 0.25rem;   /* English: small gap between icon and text */
     }
     .stat-coins td i {
       font-size: 1rem;         /* English: standard icon size */
@@ -98,6 +98,7 @@
     .vertical-cards .card-inner {
       position: relative;
       width: 100%;
+      /* height: 100%;  — removed, now auto */
       transform-style: preserve-3d;
       transition: transform 0.6s;
       border-radius: 0.5rem;
@@ -157,7 +158,7 @@
     .stats .stat strong {
       margin-right: 0.25rem;
     }
-    /* Two-column COINS layout override for other cards */
+    /* Two-column COINS layout */
     .stat-coins table {
       border-collapse: collapse;
       width: auto;
@@ -170,14 +171,14 @@
     }
     .stat-coins td:first-child {
       text-align: center;
-      padding-right: 0.1rem;
+      padding-right: 0.25rem;
     }
     .stat-coins td:nth-child(2) {
       text-align: center;
       padding: 0 0.1rem;
     }
     .stat-coins td:nth-child(3) {
-      padding: 0 0.1rem;
+      padding-left: 0.25rem;
     }
     .stat-coins i {
       font-size: 1rem;
@@ -270,7 +271,7 @@
           const tmpl = templates[card.status] || templates['STATUS_1'];
           const clone = tmpl.cloneNode(true);
 
-          // Fill basic fields
+          // fill basic fields
           const img = clone.querySelector('.card-img-top');
           if (img) img.src = card.url;
           clone.querySelectorAll('.card-chain').forEach(el => el.textContent = card.CARD_CHAIN);
@@ -278,7 +279,7 @@
           clone.querySelectorAll('.card-theme').forEach(el => el.textContent = card.CARD_THEME);
           clone.querySelectorAll('.card-type').forEach(el => el.textContent = card.CARD_TYPE);
 
-          // Custom layout for STATUS_1: split CARD_COINS into array and render rows
+          // Custom layout for STATUS_1: split CARD_COINS into array and render N rows
           if (card.status === 'STATUS_1') {
             let coinsArr = [];
             if (Array.isArray(card.CARD_COINS)) {
@@ -290,62 +291,40 @@
             const coinsContainer = clone.querySelector('.stat-coins');
             coinsContainer.innerHTML = ''; // clear placeholder
 
-            // Create table with colgroup for fixed columns
             const table = document.createElement('table');
-            const colgroup = document.createElement('colgroup');
-            const col1 = document.createElement('col'); col1.style.width = '3rem';
-            const col2 = document.createElement('col'); col2.style.width = '20px';
-            const col3 = document.createElement('col'); col3.style.width = 'auto';
-            colgroup.append(col1, col2, col3);
-            table.appendChild(colgroup);
-
             coinsContainer.appendChild(table);
 
             coinsArr.forEach((_, idx) => {
               const tr = document.createElement('tr');
 
-              // Label cell with rowspan
               if (idx === 0) {
                 const tdLabel = document.createElement('td');
                 tdLabel.rowSpan = coinsArr.length;
                 tdLabel.textContent = 'CARD_COINS';
-                tdLabel.style.verticalAlign = 'middle'; // English: center vertically
-                tdLabel.style.textAlign = 'center';     // English: center horizontally
                 tr.appendChild(tdLabel);
               }
 
-              // Icon cell with zoomed GIF
               const tdIcon = document.createElement('td');
-              tdIcon.style.verticalAlign = 'middle';
-              tdIcon.style.textAlign = 'center';
-              tdIcon.innerHTML =
-                '<div style="width:18px; height:18px; overflow:hidden; display:inline-flex; padding: 0 6rem; align-items:center; justify-content:center;">' +
-                  '<img src="https://cdn.pixabay.com/animation/2024/08/15/20/58/20-58-49-129_512.gif" ' +
-                       'style="width:28px; height:28px; transform:scale(1.8); object-fit:contain; pointer-events:none;">' +
-                '</div>';
+              tdIcon.innerHTML = '<div style="width: 15px; height: 15px; overflow: hidden; display: flex; align-items: center; padding: 0 6rem; justify-content: center;"><img src="https://cdn.pixabay.com/animation/2024/08/15/20/58/20-58-49-129_512.gif" style="width: 30px; height: 30px; transform: scale(1.8); object-fit: contain; pointer-events: none; "></div>';
               tr.appendChild(tdIcon);
 
-              // Text cell
               const tdText = document.createElement('td');
               tdText.textContent = 'COIN';
-              tdText.style.verticalAlign = 'middle';
-              tdText.style.textAlign = 'left';
               tr.appendChild(tdText);
 
               table.appendChild(tr);
             });
           } else {
-            // For other statuses
             clone.querySelectorAll('.card-coins').forEach(el => el.textContent = card.CARD_COINS);
           }
 
-          // Fill remaining fields
+          // fill remaining fields
           clone.querySelectorAll('.card-ammount').forEach(el => el.textContent = card.USD_AMMOUNT);
           clone.querySelectorAll('.card-id').forEach(el => el.textContent = card.CARD_ID);
           clone.querySelectorAll('.pack-id').forEach(el => el.textContent = card.PACK_ID);
           clone.querySelectorAll('.card-date').forEach(el => el.textContent = card.CARD_DATE);
 
-          // Flip on click
+          // flip on click
           const cardEl = clone.querySelector('.card');
           if (cardEl) cardEl.onclick = () => cardEl.classList.toggle('flipped');
 
