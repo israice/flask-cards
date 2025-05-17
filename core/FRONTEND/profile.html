@@ -34,53 +34,33 @@
 
     /* Remove any overflow inside card body */
     .card-body {
-      overflow: visible !important; /* English: allow content to expand without scroll */
+      overflow: visible !important;
     }
     .stats {
       overflow: visible !important;
-      /* English: tighter line-height */
       line-height: 1.1 !important;
-      /* English: smaller font to prevent overflow */
       font-size: clamp(0.8rem, 1vw, 0.9rem) !important;
-      /* English: reduced gap between stats */
       gap: 0.15rem !important;
     }
 
-    /* ====== Custom small coins table styles ====== */
+    /* Custom small coins-and-amounts table styles */
     .stat-coins table {
       border-collapse: collapse;
-      width: 100%;
-      table-layout: fixed;     /* English: fix column widths */
-      margin: 0;               /* no extra margins */
-      font-size: 0.85rem;      /* slightly smaller text */
-      line-height: 1;          /* tighten line height */
+      width: auto;
+      font-size: 0.85rem;
+      line-height: 1;
     }
     .stat-coins td {
-      padding: 0.1rem 0.2rem;   /* minimal vertical & horizontal padding */
+      padding: 0.1rem 0.2rem;
       vertical-align: middle;
     }
     .stat-coins td:first-child {
-      /* label cell */
-      width: 3rem;             /* English: fixed width for label */
+      width: 3rem;
       text-align: center;
       padding: 0 0.1rem;
     }
-    .stat-coins td:nth-child(2) {
-      /* icon cell */
-      width: 1.2rem;
-      text-align: center;
-      padding: 0;              /* English: remove extra padding around icon */
-    }
-    .stat-coins td:nth-child(3) {
-      /* COIN text cell */
-      text-align: left;
-      padding: 0 0.1rem;   /* English: small gap between icon and text */
-    }
-    .stat-coins td i {
-      font-size: 1rem;         /* English: standard icon size */
-    }
 
-    /* ====== Styles from card_1.html ====== */
+    /* Shared card styles */
     .vertical-cards {
       display: flex;
       flex-direction: column;
@@ -101,7 +81,7 @@
       transform-style: preserve-3d;
       transition: transform 0.6s;
       border-radius: 0.5rem;
-      overflow: visible;  /* English: allow full content */
+      overflow: visible;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
     .vertical-cards .card.flipped .card-inner {
@@ -117,9 +97,9 @@
       display: flex;
     }
     .card-front {
-      display: flex;              
+      display: flex;
       flex-direction: row;
-      align-items: stretch;       
+      align-items: stretch;
     }
     .card-back {
       transform: rotateY(180deg);
@@ -129,16 +109,16 @@
       padding: 1rem;
     }
     .card-img-top {
-      flex: 0 0 auto;            
-      height: 100%;              
-      width: auto;               
+      flex: 0 0 auto;
+      height: 100%;
+      width: auto;
       object-fit: contain;
       display: block;
     }
     .card-body {
       flex: 1 1 auto;
       display: flex;
-      align-items: center;       
+      align-items: center;
       padding: 1rem;
       overflow-x: auto;
     }
@@ -157,50 +137,12 @@
     .stats .stat strong {
       margin-right: 0.25rem;
     }
-    /* Two-column COINS layout override for other cards */
-    .stat-coins table {
-      border-collapse: collapse;
-      width: auto;
-      font-size: 0.85rem;
-      line-height: 1;
-    }
-    .stat-coins td {
-      padding: 0.1rem 0.2rem;
-      vertical-align: middle;
-    }
-    .stat-coins td:first-child {
-      text-align: center;
-      padding-right: 0.1rem;
-    }
-    .stat-coins td:nth-child(2) {
-      text-align: center;
-      padding: 0 0.1rem;
-    }
-    .stat-coins td:nth-child(3) {
-      padding: 0 0.1rem;
-    }
-    .stat-coins i {
-      font-size: 1rem;
-    }
-
-    /* ====== Styles from card_2.html ====== */
+    /* Overrides for STATUS_2 and STATUS_3 cards */
     .vertical-cards {
-      max-width: 650px; /* override max-width for STATUS_2 cards */
+      max-width: 650px;
     }
     .vertical-cards .card {
-      height: 280px; /* fixed card height for STATUS_2 */
-    }
-    .vertical-cards .card-inner {
-      height: 100%;
-      overflow: hidden;
-    }
-
-    /* ====== Styles from card_3.html ====== */
-    .vertical-cards {
-      max-width: 650px; /* override max-width for STATUS_3 cards */
-    }
-    .vertical-cards .card {
-      height: 280px; /* fixed card height for STATUS_3 */
+      height: 280px;
     }
     .vertical-cards .card-inner {
       height: 100%;
@@ -209,7 +151,6 @@
   </style>
 </head>
 <body>
-  <!-- Navbar -->
   <nav class="navbar navbar-light">
     <div class="container-fluid d-flex justify-content-between align-items-center">
       <a class="navbar-brand" href="#">MyApp</a>
@@ -223,23 +164,19 @@
     </div>
   </nav>
 
-  <!-- User's Cards Gallery -->
   <div class="vertical-cards-container">
     <h3>Your Cards</h3>
     <div id="cards-container" class="vertical-cards"></div>
   </div>
 
-  <!-- Hidden container for fragments -->
   <div id="card-template-container" style="display:none;"></div>
 
-  <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById('cards-container');
       const templates = {};
 
-      // Load templates by status
       function loadTemplates() {
         const mapping = {
           'STATUS_1': '/card_1.html',
@@ -262,7 +199,6 @@
         );
       }
 
-      // Render cards
       function renderCards(cards) {
         container.innerHTML = '';
 
@@ -270,7 +206,7 @@
           const tmpl = templates[card.status] || templates['STATUS_1'];
           const clone = tmpl.cloneNode(true);
 
-          // Fill basic fields
+          // Set common fields
           const img = clone.querySelector('.card-img-top');
           if (img) img.src = card.url;
           clone.querySelectorAll('.card-chain').forEach(el => el.textContent = card.CARD_CHAIN);
@@ -278,74 +214,110 @@
           clone.querySelectorAll('.card-theme').forEach(el => el.textContent = card.CARD_THEME);
           clone.querySelectorAll('.card-type').forEach(el => el.textContent = card.CARD_TYPE);
 
-          // Custom layout for STATUS_1: split CARD_COINS into array and render rows
-          if (card.status === 'STATUS_1') {
-            let coinsArr = [];
-            if (Array.isArray(card.CARD_COINS)) {
-              coinsArr = card.CARD_COINS;
-            } else if (typeof card.CARD_COINS === 'string') {
-              coinsArr = card.CARD_COINS.split(',').map(s => s.trim());
-            }
+          // GIF-only table for STATUS_1 with CARD_COINS header in first column
+          const coinsContainer = clone.querySelector('.stat-coins');
+          const coinsArr = Array.isArray(card.CARD_COINS)
+            ? card.CARD_COINS
+            : card.CARD_COINS.split(',').map(s => s.trim());
 
-            const coinsContainer = clone.querySelector('.stat-coins');
-            coinsContainer.innerHTML = ''; // clear placeholder
-
-            // Create table with colgroup for fixed columns
+          if (coinsContainer && card.status === 'STATUS_1') {
+            coinsContainer.innerHTML = '';
             const table = document.createElement('table');
             const colgroup = document.createElement('colgroup');
-            const col1 = document.createElement('col'); col1.style.width = '3rem';
-            const col2 = document.createElement('col'); col2.style.width = '20px';
-            const col3 = document.createElement('col'); col3.style.width = 'auto';
-            colgroup.append(col1, col2, col3);
+            // First column: label, same width as others
+            const colLabel = document.createElement('col');
+            colLabel.style.width = '3rem';
+            // Second column: GIF icon
+            const colIcon = document.createElement('col');
+            colIcon.style.width = '20px';
+            colgroup.appendChild(colLabel);
+            colgroup.appendChild(colIcon);
             table.appendChild(colgroup);
-
             coinsContainer.appendChild(table);
 
             coinsArr.forEach((_, idx) => {
               const tr = document.createElement('tr');
-
-              // Label cell with rowspan
               if (idx === 0) {
+                // Header cell "CARD_COINS"
                 const tdLabel = document.createElement('td');
                 tdLabel.rowSpan = coinsArr.length;
                 tdLabel.textContent = 'CARD_COINS';
-                tdLabel.style.verticalAlign = 'middle'; // English: center vertically
-                tdLabel.style.textAlign = 'center';     // English: center horizontally
+                tdLabel.style.verticalAlign = 'middle';
+                tdLabel.style.textAlign = 'center';
                 tr.appendChild(tdLabel);
               }
-
-              // Icon cell with zoomed GIF
+              // GIF cell
               const tdIcon = document.createElement('td');
               tdIcon.style.verticalAlign = 'middle';
               tdIcon.style.textAlign = 'center';
               tdIcon.innerHTML =
-                '<div style="width:18px; height:18px; overflow:hidden; display:inline-flex; padding: 0 6rem; align-items:center; justify-content:center;">' +
-                  '<img src="https://cdn.pixabay.com/animation/2024/08/15/20/58/20-58-49-129_512.gif" ' +
-                       'style="width:28px; height:28px; transform:scale(1.8); object-fit:contain; pointer-events:none;">' +
+                '<div style="width:18px;height:18px;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;">' +
+                '<img src="https://cdn.pixabay.com/animation/2024/08/15/20/58/20-58-49-129_512.gif" ' +
+                     'style="width:28px;height:28px;transform:scale(1.8);object-fit:contain;pointer-events:none;">' +
                 '</div>';
               tr.appendChild(tdIcon);
 
-              // Text cell
+              table.appendChild(tr);
+            });
+          }
+          // Fallback: остальные статусы — оригинальная логика
+          else if (coinsContainer) {
+            const amountArr = Array.isArray(card.USD_AMMOUNT)
+              ? card.USD_AMMOUNT
+              : card.USD_AMMOUNT.split(',').map(s => s.trim());
+            coinsContainer.innerHTML = '';
+            const table = document.createElement('table');
+            const colgroup = document.createElement('colgroup');
+            ['3rem','20px','auto','auto'].forEach(w => {
+              const c = document.createElement('col');
+              c.style.width = w;
+              colgroup.appendChild(c);
+            });
+            table.appendChild(colgroup);
+            coinsContainer.appendChild(table);
+
+            coinsArr.forEach((coin, idx) => {
+              const tr = document.createElement('tr');
+              if (idx === 0) {
+                const tdLabel = document.createElement('td');
+                tdLabel.rowSpan = coinsArr.length;
+                tdLabel.textContent = 'CARD_COINS';
+                tdLabel.style.textAlign = 'center';
+                tdLabel.style.verticalAlign = 'middle';
+                tr.appendChild(tdLabel);
+              }
+              const tdIcon = document.createElement('td');
+              tdIcon.style.verticalAlign = 'middle';
+              tdIcon.style.textAlign = 'center';
+              tdIcon.innerHTML =
+                '<div style="width:18px;height:18px;overflow:hidden;display:inline-flex;padding:0 6rem;align-items:center;justify-content:center;">' +
+                '<img src="https://cdn.pixabay.com/animation/2024/08/15/20/58/20-58-49-129_512.gif" ' +
+                     'style="width:28px;height:28px;transform:scale(1.8);object-fit:contain;pointer-events:none;">' +
+                '</div>';
+              tr.appendChild(tdIcon);
+
               const tdText = document.createElement('td');
-              tdText.textContent = 'COIN';
-              tdText.style.verticalAlign = 'middle';
+              tdText.textContent = coin;
               tdText.style.textAlign = 'left';
+              tdText.style.verticalAlign = 'middle';
               tr.appendChild(tdText);
+
+              const tdAmt = document.createElement('td');
+              tdAmt.textContent = amountArr[idx] || '';
+              tdAmt.style.textAlign = 'left';
+              tdAmt.style.verticalAlign = 'middle';
+              tr.appendChild(tdAmt);
 
               table.appendChild(tr);
             });
-          } else {
-            // For other statuses
-            clone.querySelectorAll('.card-coins').forEach(el => el.textContent = card.CARD_COINS);
           }
 
-          // Fill remaining fields
-          clone.querySelectorAll('.card-ammount').forEach(el => el.textContent = card.USD_AMMOUNT);
+          // Set IDs and date
           clone.querySelectorAll('.card-id').forEach(el => el.textContent = card.CARD_ID);
           clone.querySelectorAll('.pack-id').forEach(el => el.textContent = card.PACK_ID);
           clone.querySelectorAll('.card-date').forEach(el => el.textContent = card.CARD_DATE);
 
-          // Flip on click
+          // Flip logic
           const cardEl = clone.querySelector('.card');
           if (cardEl) cardEl.onclick = () => cardEl.classList.toggle('flipped');
 
@@ -353,7 +325,6 @@
         });
       }
 
-      // Initialize loading and polling
       function initialize() {
         const saved = localStorage.getItem('cards');
         if (saved) {
@@ -375,9 +346,7 @@
         setInterval(loadCards, 5000);
       }
 
-      loadTemplates()
-        .then(initialize)
-        .catch(err => console.error(err));
+      loadTemplates().then(initialize).catch(err => console.error(err));
     });
   </script>
 </body>
