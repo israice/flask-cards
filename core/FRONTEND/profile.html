@@ -176,7 +176,18 @@
     document.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById('cards-container');
       const templates = {};
-
+  
+      // Generate cache-buster once on page load
+      const cacheBuster = Date.now();
+      // GIF URLs
+      const gifUrlStatus1 = 'https://cdn.pixabay.com/animation/2024/08/15/20/58/20-58-49-129_512.gif';
+      const gifUrlOther   = 'https://cdn.pixabay.com/animation/2022/12/21/03/30/03-30-53-418_512.gif';
+  
+      // Append cache-buster parameter
+      function withCacheBuster(url) {
+        return `${url}?cb=${cacheBuster}`;
+      }
+  
       function loadTemplates() {
         const mapping = {
           'STATUS_1': '/card_1.html',
@@ -198,14 +209,14 @@
           )
         );
       }
-
+  
       function renderCards(cards) {
         container.innerHTML = '';
-
+  
         cards.forEach(card => {
           const tmpl = templates[card.status] || templates['STATUS_1'];
           const clone = tmpl.cloneNode(true);
-
+  
           // Set common fields
           const img = clone.querySelector('.card-img-top');
           if (img) img.src = card.url;
@@ -213,69 +224,53 @@
           clone.querySelectorAll('.card-name').forEach(el => el.textContent = card.CARD_NAME);
           clone.querySelectorAll('.card-theme').forEach(el => el.textContent = card.CARD_THEME);
           clone.querySelectorAll('.card-type').forEach(el => el.textContent = card.CARD_TYPE);
-
-          // GIF-only table for STATUS_1 with CARD_COINS header in first column
+  
           const coinsContainer = clone.querySelector('.stat-coins');
           const coinsArr = Array.isArray(card.CARD_COINS)
             ? card.CARD_COINS
             : card.CARD_COINS.split(',').map(s => s.trim());
-
-          if (coinsContainer && card.status === 'STATUS_1') {
+  
+          // Determine which GIF to use based on status
+          const selectedGifUrl = card.status === 'STATUS_1'
+            ? withCacheBuster(gifUrlStatus1)
+            : withCacheBuster(gifUrlOther);
+  
+          // Pre-build HTML for GIF cell
+          const gifHtml = 
+            '<div style="width:18px;height:18px;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;">' +
+            `<img src="${selectedGifUrl}" ` +
+                 'style="width:28px;height:28px;transform:scale(1.8);object-fit:contain;pointer-events:none;">' +
+            '</div>';
+  
+          if (coinsContainer) {
             coinsContainer.innerHTML = '';
             const table = document.createElement('table');
             const colgroup = document.createElement('colgroup');
-            // First column: label, same width as others
-            const colLabel = document.createElement('col');
-            colLabel.style.width = '3rem';
-            // Second column: GIF icon
-            const colIcon = document.createElement('col');
-            colIcon.style.width = '20px';
-            colgroup.appendChild(colLabel);
-            colgroup.appendChild(colIcon);
+  
+            if (card.status === 'STATUS_1') {
+              // Two columns: label + GIF
+              const colLabel = document.createElement('col'); colLabel.style.width = '3rem';
+              const colIcon  = document.createElement('col'); colIcon.style.width = '20px';
+              colgroup.append(colLabel, colIcon);
+            } else {
+              // Four columns: label, GIF, coin name, amount
+              ['3rem','20px','auto','auto'].forEach(w => {
+                const c = document.createElement('col');
+                c.style.width = w;
+                colgroup.appendChild(c);
+              });
+            }
+  
             table.appendChild(colgroup);
             coinsContainer.appendChild(table);
-
-            coinsArr.forEach((_, idx) => {
-              const tr = document.createElement('tr');
-              if (idx === 0) {
-                // Header cell "CARD_COINS"
-                const tdLabel = document.createElement('td');
-                tdLabel.rowSpan = coinsArr.length;
-                tdLabel.textContent = 'CARD_COINS';
-                tdLabel.style.verticalAlign = 'middle';
-                tdLabel.style.textAlign = 'center';
-                tr.appendChild(tdLabel);
-              }
-              // GIF cell
-              const tdIcon = document.createElement('td');
-              tdIcon.style.verticalAlign = 'middle';
-              tdIcon.style.textAlign = 'center';
-              tdIcon.innerHTML =
-                '<div style="width:18px;height:18px;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;">' +
-                '<img src="https://cdn.pixabay.com/animation/2024/08/15/20/58/20-58-49-129_512.gif" ' +
-                     'style="width:28px;height:28px;transform:scale(1.8);object-fit:contain;pointer-events:none;">' +
-                '</div>';
-              tr.appendChild(tdIcon);
-
-              table.appendChild(tr);
-            });
-          }
-          // Fallback: остальные статусы — оригинальная логика
-          else if (coinsContainer) {
-            const amountArr = Array.isArray(card.USD_AMMOUNT)
-              ? card.USD_AMMOUNT
-              : card.USD_AMMOUNT.split(',').map(s => s.trim());
-            coinsContainer.innerHTML = '';
-            const table = document.createElement('table');
-            const colgroup = document.createElement('colgroup');
-            ['3rem','20px','auto','auto'].forEach(w => {
-              const c = document.createElement('col');
-              c.style.width = w;
-              colgroup.appendChild(c);
-            });
-            table.appendChild(colgroup);
-            coinsContainer.appendChild(table);
-
+  
+            const amountArr = card.status === 'STATUS_1'
+              ? []
+              : (Array.isArray(card.USD_AMMOUNT)
+                  ? card.USD_AMMOUNT
+                  : card.USD_AMMOUNT.split(',').map(s => s.trim())
+                );
+  
             coinsArr.forEach((coin, idx) => {
               const tr = document.createElement('tr');
               if (idx === 0) {
@@ -286,45 +281,45 @@
                 tdLabel.style.verticalAlign = 'middle';
                 tr.appendChild(tdLabel);
               }
+              // GIF cell
               const tdIcon = document.createElement('td');
-              tdIcon.style.verticalAlign = 'middle';
               tdIcon.style.textAlign = 'center';
-              tdIcon.innerHTML =
-                '<div style="width:18px;height:18px;overflow:hidden;display:inline-flex;padding:0 6rem;align-items:center;justify-content:center;">' +
-                '<img src="https://cdn.pixabay.com/animation/2024/08/15/20/58/20-58-49-129_512.gif" ' +
-                     'style="width:28px;height:28px;transform:scale(1.8);object-fit:contain;pointer-events:none;">' +
-                '</div>';
+              tdIcon.style.verticalAlign = 'middle';
+              tdIcon.innerHTML = gifHtml;
               tr.appendChild(tdIcon);
-
-              const tdText = document.createElement('td');
-              tdText.textContent = coin;
-              tdText.style.textAlign = 'left';
-              tdText.style.verticalAlign = 'middle';
-              tr.appendChild(tdText);
-
-              const tdAmt = document.createElement('td');
-              tdAmt.textContent = amountArr[idx] || '';
-              tdAmt.style.textAlign = 'left';
-              tdAmt.style.verticalAlign = 'middle';
-              tr.appendChild(tdAmt);
-
+  
+              if (card.status !== 'STATUS_1') {
+                // Coin name cell
+                const tdText = document.createElement('td');
+                tdText.textContent = coin;
+                tdText.style.textAlign = 'left';
+                tdText.style.verticalAlign = 'middle';
+                tr.appendChild(tdText);
+                // Amount cell
+                const tdAmt = document.createElement('td');
+                tdAmt.textContent = amountArr[idx] || '';
+                tdAmt.style.textAlign = 'left';
+                tdAmt.style.verticalAlign = 'middle';
+                tr.appendChild(tdAmt);
+              }
+  
               table.appendChild(tr);
             });
           }
-
+  
           // Set IDs and date
           clone.querySelectorAll('.card-id').forEach(el => el.textContent = card.CARD_ID);
           clone.querySelectorAll('.pack-id').forEach(el => el.textContent = card.PACK_ID);
           clone.querySelectorAll('.card-date').forEach(el => el.textContent = card.CARD_DATE);
-
+  
           // Flip logic
           const cardEl = clone.querySelector('.card');
           if (cardEl) cardEl.onclick = () => cardEl.classList.toggle('flipped');
-
+  
           container.appendChild(clone);
         });
       }
-
+  
       function initialize() {
         const saved = localStorage.getItem('cards');
         if (saved) {
@@ -345,9 +340,12 @@
         loadCards();
         setInterval(loadCards, 5000);
       }
-
-      loadTemplates().then(initialize).catch(err => console.error(err));
+  
+      loadTemplates()
+        .then(initialize)
+        .catch(err => console.error(err));
     });
   </script>
+  
 </body>
 </html>
