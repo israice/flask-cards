@@ -184,6 +184,13 @@ ADMIN page
 - created card_2.html and card_3.html
 - added ccorect row in card_1, card_2, card_3  
 - fixed stats row routings
+- card_1.html stats fixed
+
+### v1.007
+
+- card_1.html stats fixed
+
+
 
 ### v999 FUTURE PLANS
 
@@ -235,7 +242,7 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 
 git add .
-git commit -m "fixed stats row routings"
+git commit -m "card_1.html stats fixed"
 git push
 
 </details>
