@@ -193,7 +193,8 @@ ADMIN page
 - fixed colms in card_2.html
 - fixed colmn of gifs
 
-
+### v1.008
+- localhost added as another domain
 
 ### v999 FUTURE PLANS
 
@@ -245,7 +246,7 @@ git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 ### Quick github update
 
 git add .
-git commit -m "fixed colmn of gifs"
+git commit -m "localhost added as another domain"
 git push
 
 </details>

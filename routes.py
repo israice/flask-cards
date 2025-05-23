@@ -89,8 +89,14 @@ def google_login():
     if next_page:
         session['next_page'] = next_page
         if next_page == 'add_card_owner':
-            session['ref_url'] = request.referrer
+            ref = request.referrer or ''
+            allowed_prefixes = current_app.config.get('AUTH_ALLOWED_DOMAINS', [])
+            if any(ref.startswith(prefix) for prefix in allowed_prefixes):
+                session['ref_url'] = ref
+            else:
+                return redirect(url_for('main.login'))
     return current_app.google.authorize_redirect(url_for('main.authorize', _external=True))
+
 
 @bp.route('/auth/google/callback')
 def authorize():
