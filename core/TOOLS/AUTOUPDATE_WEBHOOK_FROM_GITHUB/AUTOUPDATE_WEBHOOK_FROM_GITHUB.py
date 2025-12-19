@@ -69,15 +69,11 @@ class WebhookHandler(http.server.BaseHTTPRequestHandler):
             print("Step 1: Running git pull...", flush=True)
             subprocess.check_call(["git", "pull"], cwd="/app", stderr=subprocess.STDOUT)
 
-            print("Step 2: Building and starting new containers...", flush=True)
-            # Set ENV_FILE_PATH so docker-compose can find .env inside the container
-            compose_env = os.environ.copy()
-            compose_env["ENV_FILE_PATH"] = "/app/.env"
+            # Restart flask_app to pick up new code (no rebuild needed since code is volume-mounted)
+            print("Step 2: Restarting flask_app container...", flush=True)
             subprocess.check_call(
-                ["docker-compose", "-f", "docker-compose.prod.yml", "--project-directory", HOST_PROJECT_DIR, "-p", "nakama", "up", "-d", "--build", "flask_app"],
-                cwd="/app",
-                stderr=subprocess.STDOUT,
-                env=compose_env
+                ["docker", "restart", "flask_app"],
+                stderr=subprocess.STDOUT
             )
 
             print("=" * 80, flush=True)
