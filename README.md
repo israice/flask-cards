@@ -44,6 +44,12 @@ docker-compose -f docker-compose.prod.yml logs -f
 
 For detailed webhook setup, see [Webhook Documentation](core/TOOLS/AUTOUPDATE_WEBHOOK_FROM_GITHUB/README.md)
 
+### Important: Production `.env`
+Since `.env` is gitignored for security, you must create it manually on your server:
+1. `cp .env_EXAMPLE .env`
+2. `nano .env` (fill in your secrets)
+
+
 Main login page
 ![alt text](readme/main_login.png)
 
