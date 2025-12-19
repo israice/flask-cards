@@ -74,6 +74,6 @@ def create_app():
 if __name__ == '__main__':
     app = create_app()
     print(f"- - https://nakama.weforks.org/")
-    print(f"- - http://localhost:5001/")
+    print(f"- - http://localhost:{PORT}/")
     app.run(host='0.0.0.0', port=PORT, debug=False, use_reloader=False)
     
