@@ -7,8 +7,15 @@ services:
     volumes:
       - ./:/app
     ports:
-      - "5001:5001"
+      - "5002:5002"
     env_file:
       - .env
     environment:
       - FLASK_ENV=development
+    networks:
+      - pc2-net
+
+networks:
+  pc2-net:
+    external: true
+    name: pc2-net
