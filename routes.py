@@ -5,6 +5,7 @@ from flask import (
     Blueprint, render_template, redirect, url_for, session,
     jsonify, abort, send_from_directory, request, current_app
 )
+from werkzeug.security import check_password_hash
 
 bp = Blueprint('main', __name__)
 
@@ -14,6 +15,38 @@ def load_records_from_csv():
     with open(current_app.config['SYSTEM_CSV'], newline='', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         return list(reader)
+
+def load_users_auth():
+    """Load users authentication data from CSV"""
+    users_auth_path = current_app.config.get('USERS_AUTH_CSV')
+    if not users_auth_path or not os.path.exists(users_auth_path):
+        return {}
+
+    users = {}
+    with open(users_auth_path, newline='', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            username = row.get('USERNAME', '').strip()
+            if username:
+                users[username] = {
+                    'password_hash': row.get('PASSWORD_HASH', ''),
+                    'user_type': row.get('USER_TYPE', 'USER')
+                }
+    return users
+
+def authenticate_user(username, password):
+    """Authenticate user with username and password"""
+    users = load_users_auth()
+    user = users.get(username)
+    if not user:
+        return None
+
+    if check_password_hash(user['password_hash'], password):
+        return {
+            'username': username,
+            'user_type': user['user_type']
+        }
+    return None
 
 def load_whitelist(path):
     if not os.path.exists(path):
@@ -25,25 +58,19 @@ def load_whitelist(path):
             return set()
         return {r[0].strip().lower() for r in rows[1:]}
 
-def determine_user_is_admin(email):
-    email = email.strip().lower()
-    admins = load_whitelist(current_app.config['ADMIN_DB'])
-    users = load_whitelist(current_app.config['USER_DB'])
-    if email in admins:
-        return True
-    if email in users:
-        return False
-    os.makedirs(os.path.dirname(current_app.config['USER_DB']), exist_ok=True)
-    with open(current_app.config['USER_DB'], 'a', newline='', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        writer.writerow([email])
+def determine_user_is_admin(username):
+    """Check if user is admin based on username"""
+    users = load_users_auth()
+    user = users.get(username)
+    if user:
+        return user['user_type'] == 'ADMIN'
     return False
 
-def get_user_cards(email):
+def get_user_cards(username):
     records = load_records_from_csv()
     cards = []
     for rec in records:
-        if rec.get('CARD_OWNER', '').strip().lower() != email.lower():
+        if rec.get('CARD_OWNER', '').strip().lower() != username.lower():
             continue
         cid = rec.get('CARD_ID')
         if not cid:
@@ -79,64 +106,49 @@ def get_user_cards(email):
 def root():
     return redirect(url_for('main.login'))
 
-@bp.route('/login')
+@bp.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+
+        user = authenticate_user(username, password)
+        if user:
+            session['user'] = {'username': username}
+            next_page = session.pop('next_page', None)
+
+            if next_page == 'add_card_owner' and current_app.config.get('AUTH_USERS_CSV'):
+                os.makedirs(os.path.dirname(current_app.config['AUTH_USERS_CSV']), exist_ok=True)
+                with open(current_app.config['AUTH_USERS_CSV'], 'a', newline='', encoding='utf-8') as f:
+                    csv.writer(f).writerow([username, session.pop('ref_url', '')])
+                try:
+                    subprocess.run(
+                        ['python', 'core/BACKEND/D_change_card_owner/D_run_change_card_owner.py'],
+                        check=True
+                    )
+                except subprocess.CalledProcessError:
+                    pass
+                return redirect(url_for('main.profile'))
+
+            if next_page and next_page in current_app.view_functions:
+                return redirect(url_for(next_page))
+            return redirect(url_for('main.profile'))
+        else:
+            return render_template('login.html', error='Invalid username or password')
+
     return render_template('login.html')
-
-@bp.route('/google-login')
-def google_login():
-    next_page = request.args.get('next')
-    if next_page:
-        session['next_page'] = next_page
-        if next_page == 'add_card_owner':
-            ref = request.referrer or ''
-            allowed_prefixes = current_app.config.get('AUTH_ALLOWED_DOMAINS', [])
-            if any(ref.startswith(prefix) for prefix in allowed_prefixes):
-                session['ref_url'] = ref
-            else:
-                return redirect(url_for('main.login'))
-    return current_app.google.authorize_redirect(url_for('main.authorize', _external=True))
-
-
-@bp.route('/auth/google/callback')
-def authorize():
-    try:
-        token = current_app.google.authorize_access_token()
-        user_info = token.get('userinfo', {})
-        email = user_info.get('email', '').strip().lower()
-        if not email:
-            return redirect(url_for('main.login', _external=True))
-        session['user'] = {'email': email}
-        np = session.pop('next_page', None)
-        if np == 'add_card_owner' and current_app.config.get('AUTH_USERS_CSV'):
-            os.makedirs(os.path.dirname(current_app.config['AUTH_USERS_CSV']), exist_ok=True)
-            with open(current_app.config['AUTH_USERS_CSV'], 'a', newline='', encoding='utf-8') as f:
-                csv.writer(f).writerow([email, session.pop('ref_url', '')])
-            try:
-                subprocess.run(
-                    ['python', 'core/BACKEND/D_change_card_owner/D_run_change_card_owner.py'],
-                    check=True
-                )
-            except subprocess.CalledProcessError:
-                pass
-            return redirect(url_for('main.profile', _external=True))
-        if np and np in current_app.view_functions:
-            return redirect(url_for(np, _external=True))
-        return redirect(url_for('main.profile', _external=True))
-    except:
-        return redirect(url_for('main.login', _external=True))
 
 @bp.route('/profile')
 def profile():
     user = session.get('user')
     if not user:
         return redirect(url_for('main.login'))
-    email = user['email']
+    username = user['username']
     return render_template(
         'profile.html',
         user=user,
-        is_admin=determine_user_is_admin(email),
-        cards=get_user_cards(email)
+        is_admin=determine_user_is_admin(username),
+        cards=get_user_cards(username)
     )
 
 @bp.route('/logout')
@@ -147,7 +159,7 @@ def logout():
 @bp.route('/table')
 def table():
     user = session.get('user')
-    if not user or not determine_user_is_admin(user['email']):
+    if not user or not determine_user_is_admin(user['username']):
         return redirect(url_for('main.profile'))
     return render_template('table.html', user=user)
 
@@ -166,7 +178,7 @@ def api_cards():
     user = session.get('user')
     if not user:
         return jsonify({'error': 'Unauthorized'}), 401
-    return jsonify(get_user_cards(user['email']))
+    return jsonify(get_user_cards(user['username']))
 
 @bp.route('/card/<path:key>')
 def serve_card_page(key):
@@ -194,7 +206,7 @@ def card_image(filename):
 @bp.route('/run_create_cards', methods=['POST'])
 def run_create_cards():
     user = session.get('user')
-    if not user or not determine_user_is_admin(user['email']):
+    if not user or not determine_user_is_admin(user['username']):
         return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
     try:
         subprocess.run(

@@ -155,7 +155,7 @@
     <div class="container-fluid d-flex justify-content-between align-items-center">
       <a class="navbar-brand" href="#">MyApp</a>
       <div class="d-flex align-items-center">
-        <span class="me-3">{{ user.email }}</span>
+        <span class="me-3">{{ user.username }}</span>
         {% if is_admin %}
         <a class="btn btn-primary me-2" href="{{ url_for('table') }}">Table</a>
         {% endif %}

@@ -14,7 +14,7 @@
 - Docker deployment support
 
 **Live URLs:**
-- Production: https://nakama.wfork.org/
+- Production: https://nakama.weforks.org/
 - Local: http://localhost:5001/
 
 ## Technology Stack
@@ -332,7 +332,7 @@ Scripts operate on specific columns of `system_full_db.csv`:
 
 4. **Access Application:**
    - Local: http://localhost:5001/
-   - Production: https://nakama.wfork.org/
+   - Production: https://nakama.weforks.org/
 
 ### Docker Deployment
 
@@ -616,7 +616,7 @@ git push -u origin <branch-name>
 ## Contact & Resources
 
 - **Repository:** https://github.com/israice/flask-cards.git
-- **Production URL:** https://nakama.wfork.org/
+- **Production URL:** https://nakama.weforks.org/
 - **Local Development:** http://localhost:5001/
 
 ## Future Plans (v999)
