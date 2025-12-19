@@ -311,7 +311,7 @@ docker compose -f docker-compose.prod.yml logs --tail=20
 ### Quick github update
 
 git add .
-git commit -m "v1.008 - checking auto update on ubuntu server side from github webhook test4"
+git commit -m "v1.008 - checking auto update on ubuntu server side from github webhook test5"
 git push
 
 </details>
