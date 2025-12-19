@@ -4,23 +4,21 @@ sys.dont_write_bytecode = True  # disable writing .pyc files into **pycache**
 import os
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
-from authlib.integrations.flask_client import OAuth
 import logging
 from dotenv import load_dotenv
 
 # CONFIGURATION
 load_dotenv()
 APP_SECRET = os.getenv('SESSION_SECRET')
-GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
-GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 AUTH_USERS_CSV = os.getenv('AUTH_USERS')  # path to file for authenticated users logging
 TEMPLATE_FOLDER = os.getenv('TEMPLATE_FOLDER')
 CARDS_FOLDER = os.getenv('CARDS_BANK_FOLDER')
 SYSTEM_CSV = os.getenv('SYSTEM_FULL_DB_CSV')  # path to full DB CSV
 
-# Paths to whitelist CSVs
+# Paths to whitelist CSVs and auth
 ADMIN_DB = os.path.join('core', 'data', 'admin_db.csv')
 USER_DB = os.path.join('core', 'data', 'user_db.csv')
+USERS_AUTH_CSV = os.path.join('core', 'data', 'users_auth.csv')
 
 if os.getenv('PORT') is None:
     raise SystemExit("PORT must be set in .env")
@@ -49,21 +47,7 @@ def create_app():
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     app.config['PREFERRED_URL_SCHEME'] = 'https'
 
-    # Initialize OAuth
-    oauth = OAuth(app)
-    google = oauth.register(
-        name='google',
-        client_id=GOOGLE_CLIENT_ID,
-        client_secret=GOOGLE_CLIENT_SECRET,
-        authorize_url='https://accounts.google.com/o/oauth2/v2/auth',
-        access_token_url='https://oauth2.googleapis.com/token',
-        api_base_url='https://openidconnect.googleapis.com/v1/',
-        userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',
-        jwks_uri='https://www.googleapis.com/oauth2/v3/certs',
-        client_kwargs={'scope': 'openid email profile'}
-    )
-
-        # import and register routes blueprint
+    # import and register routes blueprint
     from routes import bp as main_bp
     app.register_blueprint(main_bp)
 
@@ -76,22 +60,20 @@ def create_app():
                              view_func=app.view_functions[rule.endpoint],
                              methods=rule.methods)
 
-
     # attach helpers to app
     app.config.update({
         'CARDS_FOLDER': CARDS_FOLDER,
         'SYSTEM_CSV': SYSTEM_CSV,
         'AUTH_USERS_CSV': AUTH_USERS_CSV,
         'ADMIN_DB': ADMIN_DB,
-        'USER_DB': USER_DB
+        'USER_DB': USER_DB,
+        'USERS_AUTH_CSV': USERS_AUTH_CSV
     })
-    app.oauth = oauth
-    app.google = google
     return app
 
 if __name__ == '__main__':
     app = create_app()
-    print(f"- - https://nakama.wfork.org/")
+    print(f"- - https://nakama.weforks.org/")
     print(f"- - http://localhost:5001/")
     app.run(host='0.0.0.0', port=PORT, debug=False, use_reloader=False)
     

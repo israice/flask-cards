@@ -142,7 +142,7 @@ ADMIN page
 
 ### v1.001
 
-- domain nakama.wfork.org added instead of localhost
+- domain nakama.weforks.org added instead of localhost
 - added NEW PACK button to table.html
 
 ### v1.002
