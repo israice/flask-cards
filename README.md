@@ -302,12 +302,16 @@ docker compose -f docker-compose.prod.yml down
 docker compose -f docker-compose.dev.yml up --build -d
 docker compose -f docker-compose.prod.yml up --build -d
 ```
+## see docker log
+```Bash
+docker compose -f docker-compose.prod.yml logs --tail=20
+```
 
 
 ### Quick github update
 
 git add .
-git commit -m "v1.008 - checking auto update on ubuntu server side from github webhook test3"
+git commit -m "v1.008 - checking auto update on ubuntu server side from github webhook test4"
 git push
 
 </details>
