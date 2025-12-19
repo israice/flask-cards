@@ -68,11 +68,9 @@ class WebhookHandler(http.server.BaseHTTPRequestHandler):
             print("Step 1: Running git pull...", flush=True)
             subprocess.check_call(["git", "pull"], cwd="/app", stderr=subprocess.STDOUT)
 
-            # Execute docker compose up (rebuilds and restarts changed containers)
-            # We avoid 'down' because it would kill this webhook container before it can start the new ones
             print("Step 2: Building and starting new containers...", flush=True)
             subprocess.check_call(
-                ["docker-compose", "-f", "docker-compose.prod.yml", "up", "-d", "--build"],
+                ["docker-compose", "-f", "docker-compose.prod.yml", "-p", "nakama", "up", "-d", "--build", "flask_app"],
                 cwd="/app",
                 stderr=subprocess.STDOUT
             )

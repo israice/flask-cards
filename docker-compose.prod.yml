@@ -21,10 +21,9 @@ services:
     build:
       context: ./core/TOOLS/AUTOUPDATE_WEBHOOK_FROM_GITHUB
       dockerfile: Dockerfile
-    container_name: flask_cards_webhook
     volumes:
       - ./:/app
-      - /var/run/docker.sock:/var/run/docker.sock  # Access to Docker daemon
+      - /var/run/docker.sock:/var/run/docker.sock # Access to Docker daemon
     ports:
       - "9002:9002"
     environment:
