@@ -11,7 +11,7 @@ import hashlib
 import subprocess
 import threading
 
-PORT = 9000
+PORT = 9002
 SECRET = os.environ.get("AUTOUPDATE_WEBHOOK_FROM_GITHUB", "").encode("utf-8")
 UpdateLock = threading.Lock()
 

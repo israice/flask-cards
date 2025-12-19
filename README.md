@@ -29,11 +29,11 @@ docker-compose -f docker-compose.prod.yml logs -f
 
 **Services:**
 - Flask App: `http://localhost:5002`
-- Webhook: `http://localhost:9000`
+- Webhook: `http://localhost:9002`
 
 **Setup GitHub Webhook:**
 1. Go to: `Settings → Webhooks → Add webhook`
-2. Payload URL: `http://your-server:9000/push_and_update_server`
+2. Payload URL: `http://your-server:9002/push_and_update_server`
 3. Secret: Use value from `.env` (`AUTOUPDATE_WEBHOOK_FROM_GITHUB`)
 4. Events: Just push event
 

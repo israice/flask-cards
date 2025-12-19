@@ -26,7 +26,7 @@ docker-compose -f docker-compose.prod.yml logs -f webhook
 1. Перейдите в ваш репозиторий на GitHub
 2. Settings → Webhooks → Add webhook
 3. Заполните форму:
-   - **Payload URL**: `http://your-server-ip:9000/push_and_update_server`
+   - **Payload URL**: `http://your-server-ip:9002/push_and_update_server`
    - **Content type**: `application/json`
    - **Secret**: `nakama_webhook_secret_2025_secure_key` (из .env)
    - **Events**: Just the push event
@@ -38,7 +38,7 @@ docker-compose -f docker-compose.prod.yml logs -f webhook
 
 ```bash
 # Проверка здоровья webhook сервиса
-curl http://localhost:9000/health
+curl http://localhost:9002/health
 
 # Проверьте логи webhook
 docker logs flask_cards_webhook -f
@@ -51,7 +51,7 @@ docker logs flask_cards_webhook -f
 ```
 GitHub Push Event
       ↓
-Webhook (port 9000)
+Webhook (port 9002)
       ↓
 Проверка подписи
       ↓
@@ -74,7 +74,7 @@ docker-compose up -d --build
 ## Порты
 
 - **5002** - Flask приложение
-- **9000** - Webhook сервис
+- **9002** - Webhook сервис
 
 ## Troubleshooting
 
@@ -88,7 +88,7 @@ docker logs flask_cards_webhook
 docker ps | grep webhook
 
 # Проверьте доступность порта
-curl http://localhost:9000/health
+curl http://localhost:9002/health
 ```
 
 ### Git pull fails

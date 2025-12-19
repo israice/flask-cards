@@ -26,7 +26,7 @@ services:
       - ./:/app
       - /var/run/docker.sock:/var/run/docker.sock  # Access to Docker daemon
     ports:
-      - "9000:9000"
+      - "9002:9002"
     environment:
       - AUTOUPDATE_WEBHOOK_FROM_GITHUB=${AUTOUPDATE_WEBHOOK_FROM_GITHUB}
     networks:
