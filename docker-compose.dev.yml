@@ -2,20 +2,13 @@ services:
   flask_app:
     build:
       context: ./
-    container_name: flask_app
+    container_name: nakama
     command: python run.py
     volumes:
       - ./:/app
     ports:
-      - "5002:5002"
+      - "8080:5002"
     env_file:
       - .env
     environment:
       - FLASK_ENV=development
-    networks:
-      - pc2-net
-
-networks:
-  pc2-net:
-    external: true
-    name: pc2-net

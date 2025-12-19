@@ -2,3 +2,6 @@ test.py
 test.txt
 /core/data/cards_bank
 /core/data/qr_codes
+.env
+__pycache__/
+*.pyc

@@ -236,6 +236,7 @@ ADMIN page
 
 ### v1.008
 - localhost added as another domain
+- checking auto update on ubuntu server side from github webhook
 
 ### v999 FUTURE PLANS
 
@@ -284,10 +285,23 @@ git log --oneline -n 10
 
 git fetch origin; git checkout master; git reset --hard 1eaef8b;; git clean -fdx
 
+## stop server
+```Bash
+docker compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.prod.yml down
+```
+
+## start or update server
+```Bash
+docker compose -f docker-compose.dev.yml up --build -d
+docker compose -f docker-compose.prod.yml up --build -d
+```
+
+
 ### Quick github update
 
 git add .
-git commit -m "localhost added as another domain"
+git commit -m "v1.008 - checking auto update on ubuntu server side from github webhook"
 git push
 
 </details>
