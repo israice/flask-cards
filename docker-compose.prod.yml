@@ -28,6 +28,7 @@ services:
       - "9002:9002"
     environment:
       - AUTOUPDATE_WEBHOOK_FROM_GITHUB=${AUTOUPDATE_WEBHOOK_FROM_GITHUB}
+      - HOST_PROJECT_DIR=${HOST_PROJECT_DIR:-/home/administrator/projects/nakama}
     networks:
       - pc2-net
     restart: unless-stopped

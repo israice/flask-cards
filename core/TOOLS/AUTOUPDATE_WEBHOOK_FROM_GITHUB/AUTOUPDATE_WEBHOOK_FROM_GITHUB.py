@@ -13,6 +13,7 @@ import threading
 
 PORT = 9002
 SECRET = os.environ.get("AUTOUPDATE_WEBHOOK_FROM_GITHUB", "").encode("utf-8")
+HOST_PROJECT_DIR = os.environ.get("HOST_PROJECT_DIR", "/home/administrator/projects/nakama")
 UpdateLock = threading.Lock()
 
 class WebhookHandler(http.server.BaseHTTPRequestHandler):
@@ -70,7 +71,7 @@ class WebhookHandler(http.server.BaseHTTPRequestHandler):
 
             print("Step 2: Building and starting new containers...", flush=True)
             subprocess.check_call(
-                ["docker-compose", "-f", "docker-compose.prod.yml", "-p", "nakama", "up", "-d", "--build", "flask_app"],
+                ["docker-compose", "-f", "docker-compose.prod.yml", "--project-directory", HOST_PROJECT_DIR, "-p", "nakama", "up", "-d", "--build", "flask_app"],
                 cwd="/app",
                 stderr=subprocess.STDOUT
             )
