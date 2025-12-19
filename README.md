@@ -3,6 +3,47 @@
 - https://github.com/israice/flask-cards.git
 - collect cards with crypto suprise box
 
+## Quick Start
+
+### Local Development
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run locally
+python run.py
+```
+
+Access at: `http://localhost:5002`
+
+### Production Deployment with Auto-Update
+
+```bash
+# Build and run with webhook auto-update
+docker-compose -f docker-compose.prod.yml up -d --build
+
+# Check logs
+docker-compose -f docker-compose.prod.yml logs -f
+```
+
+**Services:**
+- Flask App: `http://localhost:5002`
+- Webhook: `http://localhost:9000`
+
+**Setup GitHub Webhook:**
+1. Go to: `Settings → Webhooks → Add webhook`
+2. Payload URL: `http://your-server:9000/push_and_update_server`
+3. Secret: Use value from `.env` (`AUTOUPDATE_WEBHOOK_FROM_GITHUB`)
+4. Events: Just push event
+
+**Test Users:**
+- Admin: `admin` / `admin123`
+- User1: `user1` / `user123`
+- User2: `user2` / `user123`
+
+For detailed webhook setup, see [Webhook Documentation](core/TOOLS/AUTOUPDATE_WEBHOOK_FROM_GITHUB/README.md)
+
 Main login page
 ![alt text](readme/main_login.png)
 

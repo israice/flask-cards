@@ -1,0 +1,39 @@
+services:
+  flask_app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: flask_app
+    command: python run.py
+    volumes:
+      - ./:/app
+    ports:
+      - "5002:5002"
+    env_file:
+      - .env
+    environment:
+      - FLASK_ENV=production
+    networks:
+      - pc2-net
+    restart: unless-stopped
+
+  webhook:
+    build:
+      context: ./core/TOOLS/AUTOUPDATE_WEBHOOK_FROM_GITHUB
+      dockerfile: Dockerfile
+    container_name: flask_cards_webhook
+    volumes:
+      - ./:/app
+      - /var/run/docker.sock:/var/run/docker.sock  # Access to Docker daemon
+    ports:
+      - "9000:9000"
+    environment:
+      - AUTOUPDATE_WEBHOOK_FROM_GITHUB=${AUTOUPDATE_WEBHOOK_FROM_GITHUB}
+    networks:
+      - pc2-net
+    restart: unless-stopped
+
+networks:
+  pc2-net:
+    external: true
+    name: pc2-net
