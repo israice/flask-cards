@@ -307,7 +307,7 @@ docker compose -f docker-compose.prod.yml up --build -d
 ### Quick github update
 
 git add .
-git commit -m "v1.008 - checking auto update on ubuntu server side from github webhook"
+git commit -m "v1.008 - checking auto update on ubuntu server side from github webhook test2"
 git push
 
 </details>
