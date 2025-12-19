@@ -10,7 +10,7 @@ services:
     ports:
       - "5002:5002"
     env_file:
-      - .env
+      - ${ENV_FILE_PATH:-./.env}
     environment:
       - FLASK_ENV=production
     networks:
