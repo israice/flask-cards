@@ -18,8 +18,8 @@ if not file_path:
     raise ValueError("Environment variable SYSTEM_FULL_DB_CSV not found in .env")
 
 # Define target column indexes (0-based)
-CARD_URL_INDEX = 11     # CARD_URL column
-CARD_KEYS_INDEX = 12    # CARD_KEYS column
+CARD_URL_INDEX = 12     # CARD_URL column
+CARD_KEYS_INDEX = 13    # CARD_KEYS column
 
 # Define size of each key in bytes
 KEY_SIZE = 32

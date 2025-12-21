@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 ENV_FILE = '.env'
 ENV_GOOGLE_CALLBACK_URL = 'GOOGLE_CALLBACK_URL'
 ENV_SYSTEM_CARD_CSV = 'SYSTEM_FULL_DB_CSV'
-URL_COLUMN_INDEX = 11          # index of the column containing the URLs (0-based)
+URL_COLUMN_INDEX = 12          # index of the column containing the URLs (0-based)
 PREFIX_SEGMENT = 'card'       # the path segment to enforce in the URL prefix
 
 # === LOAD ENVIRONMENT VARIABLES ===
@@ -19,7 +19,9 @@ load_dotenv(ENV_FILE)
 # === RETRIEVE SETTINGS ===
 callback_url = os.getenv(ENV_GOOGLE_CALLBACK_URL)
 if not callback_url:
-    raise ValueError(f"{ENV_GOOGLE_CALLBACK_URL} not found in {ENV_FILE}")
+    # Use default fallback if not set
+    callback_url = "https://nakama.weforks.org"
+    print(f"WARNING: {ENV_GOOGLE_CALLBACK_URL} not found in {ENV_FILE}. Using default: {callback_url}")
 
 csv_file_path = os.getenv(ENV_SYSTEM_CARD_CSV)
 if not csv_file_path:

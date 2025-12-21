@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Profile</title>
   <!-- Bootstrap CSS -->
@@ -16,13 +18,16 @@
       display: flex;
       flex-direction: column;
       min-height: 500px;
-      background: linear-gradient(135deg, #f0f4f8, #ffffff);
+      /* background: linear-gradient(135deg, #f0f4f8, #ffffff); */
+      background: #f0f4f8;
       font-family: 'Segoe UI', sans-serif;
     }
+
     .navbar {
       background-color: #ffffff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
+
     .vertical-cards-container {
       display: flex;
       flex-direction: column;
@@ -32,124 +37,158 @@
       padding: 1rem;
     }
 
-    /* Remove any overflow inside card body */
-    .card-body {
-      overflow: visible !important;
-    }
-    .stats {
-      overflow: visible !important;
-      line-height: 1.1 !important;
-      font-size: clamp(0.8rem, 1vw, 0.9rem) !important;
-      gap: 0.15rem !important;
-    }
-
-    /* Custom small coins-and-amounts table styles */
-    .stat-coins table {
-      border-collapse: collapse;
-      width: auto;
-      font-size: 0.85rem;
-      line-height: 1;
-    }
-    .stat-coins td {
-      padding: 0.1rem 0.2rem;
-      vertical-align: middle;
-    }
-    .stat-coins td:first-child {
-      width: 3rem;
-      text-align: center;
-      padding: 0 0.1rem;
-    }
-
     /* Shared card styles */
     .vertical-cards {
       display: flex;
       flex-direction: column;
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 800px;
+      /* Increased width to accommodate side coins */
+    }
+
+    /* The wrapper for the whole item (Card + Money panel) */
+    .card-wrapper {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
       gap: 1rem;
       width: 100%;
-      max-width: 670px;
+      height: 380px;
+      /* Fixed height for consistency */
+      background: transparent;
     }
-    .vertical-cards .card {
+
+    /* 
+       LEFT SIDE: The Flippable Card 
+       Contains Image and Overlaid Stats
+    */
+    .card-flip-container {
+      position: relative;
+      flex: 0 0 280px;
+      /* Fixed width for the image part */
+      height: 100%;
       perspective: 1000px;
-      width: 100%;
-      height: 360px;
       cursor: pointer;
-      margin: 0 auto;
     }
-    .vertical-cards .card-inner {
+
+    .card-inner {
       position: relative;
       width: 100%;
-      transform-style: preserve-3d;
+      height: 100%;
+      text-align: center;
       transition: transform 0.6s;
-      border-radius: 0.5rem;
-      overflow: visible;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transform-style: preserve-3d;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
     }
-    .vertical-cards .card.flipped .card-inner {
+
+    .card-flip-container.flipped .card-inner {
       transform: rotateY(180deg);
     }
+
     .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    /* FRONT FACE: Image + Overlay */
+    .card-front {
+      background-color: #000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-img-full {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.85;
+      /* Slight dim for text readability */
+    }
+
+    .card-overlay {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      backface-visibility: hidden;
-      display: flex;
-    }
-    .card-front {
-      display: flex;
-      flex-direction: row;
-      align-items: stretch;
-    }
-    .card-back {
-      transform: rotateY(180deg);
-      background-color: #ffffff;
-      align-items: center;
-      justify-content: center;
       padding: 1rem;
-    }
-    .card-img-top {
-      flex: 0 0 auto;
-      height: 100%;
-      width: auto;
-      object-fit: contain;
-      display: block;
-    }
-    .card-body {
-      flex: 1 1 auto;
-      display: flex;
-      align-items: center;
-      padding: 1rem;
-      overflow-x: auto;
-    }
-    .stats {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      justify-content: flex-end;
+      /* Text at bottom */
+      align-items: flex-start;
+      color: white;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+      pointer-events: none;
+      /* Let clicks pass through to container */
+      background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.7) 100%);
+    }
+
+    .overlay-stat {
       font-size: 0.9rem;
-      color: #333;
-      max-width: 100%;
-      overflow-x: auto;
+      margin-bottom: 0.25rem;
+      text-align: left;
     }
-    .stats .stat {
-      white-space: nowrap;
+
+    .overlay-stat strong {
+      color: #ffd700;
+      /* Goldish for labels */
+      margin-right: 0.3rem;
     }
-    .stats .stat strong {
-      margin-right: 0.25rem;
+
+    /* BACK FACE: Details */
+    .card-back {
+      background-color: #1a1a1a;
+      color: white;
+      transform: rotateY(180deg);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
     }
-    /* Overrides for STATUS_2 and STATUS_3 cards */
-    .vertical-cards {
-      max-width: 650px;
-    }
-    .vertical-cards .card {
-      height: 280px;
-    }
-    .vertical-cards .card-inner {
+
+    /* 
+       RIGHT SIDE: The Static Coins Panel 
+    */
+    .card-coins-panel {
+      flex: 1 1 auto;
       height: 100%;
-      overflow: hidden;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Reuse existing coin table styles */
+    .stat-coins table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .stat-coins td {
+      padding: 0.4rem;
+      border-bottom: 1px solid #eee;
+    }
+
+    .stat-coins td:first-child {
+      font-weight: bold;
+      color: #555;
     }
   </style>
 </head>
+
 <body>
   <nav class="navbar navbar-light">
     <div class="container-fluid d-flex justify-content-between align-items-center">
@@ -169,26 +208,17 @@
     <div id="cards-container" class="vertical-cards"></div>
   </div>
 
-  <div id="card-template-container" style="display:none;"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      console.log('[DEBUG] DOMContentLoaded');
       const container = document.getElementById('cards-container');
+
       const templates = {};
-  
-      // Generate cache-buster once on page load
-      const cacheBuster = Date.now();
-      // GIF URLs
-      const gifUrlStatus1 = 'https://cdn.pixabay.com/animation/2024/08/15/20/58/20-58-49-129_512.gif';
-      const gifUrlOther   = 'https://cdn.pixabay.com/animation/2022/12/21/03/30/03-30-53-418_512.gif';
-  
-      // Append cache-buster parameter
-      function withCacheBuster(url) {
-        return `${url}?cb=${cacheBuster}`;
-      }
-  
+
       function loadTemplates() {
+        console.log('[DEBUG] loadTemplates searching for fragments...');
         const mapping = {
           'STATUS_1': '/card_1.html',
           'STATUS_2': '/card_2.html',
@@ -209,118 +239,170 @@
           )
         );
       }
-  
-      function renderCards(cards) {
-        container.innerHTML = '';
-  
-        cards.forEach(card => {
-          const tmpl = templates[card.status] || templates['STATUS_1'];
-          const clone = tmpl.cloneNode(true);
-  
-          // Set common fields
-          const img = clone.querySelector('.card-img-top');
-          if (img) img.src = card.url;
-          clone.querySelectorAll('.card-chain').forEach(el => el.textContent = card.CARD_CHAIN);
-          clone.querySelectorAll('.card-name').forEach(el => el.textContent = card.CARD_NAME);
-          clone.querySelectorAll('.card-theme').forEach(el => el.textContent = card.CARD_THEME);
-          clone.querySelectorAll('.card-type').forEach(el => el.textContent = card.CARD_TYPE);
-  
-          const coinsContainer = clone.querySelector('.stat-coins');
-          const coinsArr = Array.isArray(card.CARD_COINS)
-            ? card.CARD_COINS
-            : card.CARD_COINS.split(',').map(s => s.trim());
-  
-          // Determine which GIF to use based on status
-          const selectedGifUrl = card.status === 'STATUS_1'
-            ? withCacheBuster(gifUrlStatus1)
-            : withCacheBuster(gifUrlOther);
-  
-          // Pre-build HTML for GIF cell
-          const gifHtml = 
-            '<div style="width:18px;height:18px;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;">' +
-            `<img src="${selectedGifUrl}" ` +
-                 'style="width:28px;height:28px;transform:scale(1.8);object-fit:contain;pointer-events:none;">' +
-            '</div>';
-  
-          if (coinsContainer) {
+
+      // Helper to update or create a card element
+      function updateCardElement(el, card, isNew) {
+        // console.log(`[DEBUG] updateCardElement ID=${card.CARD_ID} isNew=${isNew}`);
+        // 1. Text Fields
+        const safeText = (sel, val) => {
+          el.querySelectorAll(sel).forEach(e => {
+            const newVal = val || '';
+            if (e.textContent !== newVal) {
+              // console.log(`[DEBUG] Updating text ${sel}: ${newVal}`);
+              e.textContent = newVal;
+            }
+          });
+        };
+        safeText('.card-chain', card.CARD_CHAIN);
+        safeText('.card-name', card.CARD_NAME);
+        safeText('.card-theme', card.CARD_THEME);
+        safeText('.card-type', card.CARD_TYPE);
+        safeText('.card-id', card.CARD_ID);
+        safeText('.pack-id', card.PACK_ID);
+        safeText('.card-date', card.CARD_DATE);
+
+        // 2. Image
+        const img = el.querySelector('.card-img-top');
+        // Check raw attribute to avoid absolute/relative URL mismatch causing reloads
+        if (img && img.getAttribute('src') !== card.url) {
+          console.log(`[DEBUG] Updating image for ${card.CARD_ID}: ${img.getAttribute('src')} -> ${card.url}`);
+          img.src = card.url;
+        }
+
+        // 3. Coins Table
+        const coinsContainer = el.querySelector('.stat-coins');
+        if (coinsContainer) {
+          const coinsArr = (card.CARD_COINS || '').split(',').map(s => s.trim()).filter(s => s);
+          const amountArr = (card.USD_AMMOUNT || '').split(',').map(s => s.trim());
+          const isStatus1 = (card.status === 'STATUS_1');
+
+          // Serialize data to check for changes
+          const newDataString = JSON.stringify({ coinsArr, amountArr, isStatus1 });
+          const currentDataString = coinsContainer.getAttribute('data-coins-hash');
+
+          // Only rebuild if data changed
+          if (newDataString !== currentDataString) {
+            // console.log(`[DEBUG] Updating coins for ${card.CARD_ID}`);
+            coinsContainer.setAttribute('data-coins-hash', newDataString);
             coinsContainer.innerHTML = '';
+
             const table = document.createElement('table');
             const colgroup = document.createElement('colgroup');
-  
-            if (card.status === 'STATUS_1') {
-              // Two columns: label + GIF
-              const colLabel = document.createElement('col'); colLabel.style.width = '3rem';
-              const colIcon  = document.createElement('col'); colIcon.style.width = '20px';
-              colgroup.append(colLabel, colIcon);
+
+            if (isStatus1) {
+              // Two cols
+              const c1 = document.createElement('col'); c1.style.width = '3rem';
+              const c2 = document.createElement('col'); c2.style.width = '20px';
+              colgroup.append(c1, c2);
             } else {
-              // Four columns: label, GIF, coin name, amount
-              ['3rem','20px','auto','auto'].forEach(w => {
+              // Four cols
+              ['3rem', '20px', 'auto', 'auto'].forEach(w => {
                 const c = document.createElement('col');
                 c.style.width = w;
                 colgroup.appendChild(c);
               });
             }
-  
             table.appendChild(colgroup);
-            coinsContainer.appendChild(table);
-  
-            const amountArr = card.status === 'STATUS_1'
-              ? []
-              : (Array.isArray(card.USD_AMMOUNT)
-                  ? card.USD_AMMOUNT
-                  : card.USD_AMMOUNT.split(',').map(s => s.trim())
-                );
-  
+
+            // Pre-built GIF HTML
+            const gifUrl = isStatus1 ? `https://cdn.pixabay.com/animation/2024/08/15/20/58/20-58-49-129_512.gif` : `https://cdn.pixabay.com/animation/2022/12/21/03/30/03-30-53-418_512.gif`;
+            const gifHtml =
+              '<div style="width:18px;height:18px;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;">' +
+              `<img src="${gifUrl}" style="width:28px;height:28px;transform:scale(1.8);object-fit:contain;pointer-events:none;">` +
+              '</div>';
+
             coinsArr.forEach((coin, idx) => {
               const tr = document.createElement('tr');
+              // Label (rowspan)
               if (idx === 0) {
                 const tdLabel = document.createElement('td');
-                tdLabel.rowSpan = coinsArr.length;
+                tdLabel.rowSpan = coinsArr.length || 1;
                 tdLabel.textContent = 'CARD_COINS';
                 tdLabel.style.textAlign = 'center';
                 tdLabel.style.verticalAlign = 'middle';
                 tr.appendChild(tdLabel);
               }
-              // GIF cell
+              // GIF
               const tdIcon = document.createElement('td');
               tdIcon.style.textAlign = 'center';
               tdIcon.style.verticalAlign = 'middle';
               tdIcon.innerHTML = gifHtml;
               tr.appendChild(tdIcon);
-  
-              if (card.status !== 'STATUS_1') {
-                // Coin name cell
-                const tdText = document.createElement('td');
-                tdText.textContent = coin;
-                tdText.style.textAlign = 'left';
-                tdText.style.verticalAlign = 'middle';
-                tr.appendChild(tdText);
-                // Amount cell
+
+              if (!isStatus1) {
+                // Name
+                const tdName = document.createElement('td');
+                tdName.textContent = coin;
+                tdName.style.textAlign = 'left';
+                tdName.style.verticalAlign = 'middle';
+                tr.appendChild(tdName);
+                // Amount
                 const tdAmt = document.createElement('td');
                 tdAmt.textContent = amountArr[idx] || '';
                 tdAmt.style.textAlign = 'left';
                 tdAmt.style.verticalAlign = 'middle';
                 tr.appendChild(tdAmt);
               }
-  
               table.appendChild(tr);
             });
+            coinsContainer.appendChild(table);
           }
-  
-          // Set IDs and date
-          clone.querySelectorAll('.card-id').forEach(el => el.textContent = card.CARD_ID);
-          clone.querySelectorAll('.pack-id').forEach(el => el.textContent = card.PACK_ID);
-          clone.querySelectorAll('.card-date').forEach(el => el.textContent = card.CARD_DATE);
-  
-          // Flip logic
-          const cardEl = clone.querySelector('.card');
-          if (cardEl) cardEl.onclick = () => cardEl.classList.toggle('flipped');
-  
-          container.appendChild(clone);
+        }
+      }
+
+      function renderCards(cards) {
+        console.log(`[DEBUG] renderCards called with ${cards.length} cards.`);
+        // Collect current IDs for cleanup
+        const incomingIds = new Set();
+
+        cards.forEach(card => {
+          const cardId = card.CARD_ID;
+          incomingIds.add(cardId);
+
+          // Try to find existing card
+          let cardEl = container.querySelector(`.card-wrapper[data-card-id="${cardId}"]`);
+          let isNew = false;
+
+          if (!cardEl) {
+            isNew = true;
+            console.log(`[DEBUG] Creating new DOM element for card ${cardId}`);
+            const tmpl = templates[card.status] || templates['STATUS_1'];
+            const clone = tmpl.cloneNode(true);
+            // The template content might be a DocumentFragment, we need the Element
+            // Our templates have a single root div.card-wrapper
+            cardEl = clone.firstElementChild;
+            if (!cardEl) return; // Should not happen
+
+            cardEl.setAttribute('data-card-id', cardId);
+
+            // One-time setup
+            const flipContainer = cardEl.querySelector('.card-flip-container');
+            if (flipContainer) {
+              flipContainer.onclick = () => {
+                console.log(`[DEBUG] Card ${cardId} clicked! Toggling flip.`);
+                flipContainer.classList.toggle('flipped');
+              };
+            }
+          }
+
+          // Update content (re-renders table, updates text)
+          updateCardElement(cardEl, card, isNew);
+
+          // Ensure order: appendChild moves existing nodes to the end
+          container.appendChild(cardEl);
+        });
+
+        // Cleanup removed cards
+        Array.from(container.children).forEach(child => {
+          if (!incomingIds.has(child.dataset.cardId)) {
+            console.log(`[DEBUG] Removing stale card ID: ${child.dataset.cardId}`);
+            child.remove();
+          }
         });
       }
-  
+
       function initialize() {
+        console.log('[DEBUG] initialize() started');
         const saved = localStorage.getItem('cards');
         if (saved) {
           try { renderCards(JSON.parse(saved)); }
@@ -328,9 +410,11 @@
         }
         async function loadCards() {
           try {
+            // console.log('[DEBUG] Fetching /api/cards ...');
             const res = await fetch('/api/cards');
             if (!res.ok) throw new Error('Network response was not ok');
             const cards = await res.json();
+            // console.log(`[DEBUG] Fetched ${cards.length} cards.`);
             renderCards(cards);
             localStorage.setItem('cards', JSON.stringify(cards));
           } catch (err) {
@@ -340,12 +424,13 @@
         loadCards();
         setInterval(loadCards, 5000);
       }
-  
+
       loadTemplates()
         .then(initialize)
         .catch(err => console.error(err));
     });
   </script>
-  
+
 </body>
+
 </html>

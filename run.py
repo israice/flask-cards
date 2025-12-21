@@ -46,6 +46,7 @@ def create_app():
     app.secret_key = APP_SECRET
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     app.config['PREFERRED_URL_SCHEME'] = 'https'
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
 
     # import and register routes blueprint
     from routes import bp as main_bp

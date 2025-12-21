@@ -244,6 +244,13 @@ ADMIN page
 - localhost added as another domain
 - checking auto update on ubuntu server side from github webhook
 - fixed user as admin if in whitelist
+- added new card design and DEBUG to console 
+
+
+
+
+
+
 
 ### v999 FUTURE PLANS
 
@@ -313,7 +320,7 @@ docker compose -f docker-compose.prod.yml logs --tail=20
 ### Quick github update
 
 git add .
-git commit -m "v1.008 - fixed user as admin if in whitelist"
+git commit -m "v1.008 - added new card design and DEBUG to console"
 git push
 
 </details>

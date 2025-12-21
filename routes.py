@@ -32,8 +32,8 @@ def load_users_auth():
         reader = csv.DictReader(f)
         for row in reader:
             # Header in user_db.csv is USER_WHITELIST, PASSWORD
-            username = row.get('USER_WHITELIST', '').strip()
-            password = row.get('PASSWORD', '').strip()
+            username = (row.get('USER_WHITELIST') or '').strip()
+            password = (row.get('PASSWORD') or '').strip()
             
             if username:
                 # Check if username is in admin whitelist or is 'admin' (fallback)
@@ -81,7 +81,7 @@ def get_user_cards(username):
     records = load_records_from_csv()
     cards = []
     for rec in records:
-        if rec.get('CARD_OWNER', '').strip().lower() != username.lower():
+        if (rec.get('CARD_OWNER') or '').strip().lower() != username.lower():
             continue
         cid = rec.get('CARD_ID')
         if not cid:

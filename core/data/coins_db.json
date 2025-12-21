@@ -3,140 +3,140 @@
         "id": "bitcoin",
         "symbol": "btc",
         "name": "Bitcoin",
-        "market_cap": 1755507353984,
-        "current_price": 87993
+        "market_cap": 1771981975645,
+        "current_price": 88864
     },
     {
         "id": "ethereum",
         "symbol": "eth",
         "name": "Ethereum",
-        "market_cap": 358737990939,
-        "current_price": 2972.27
+        "market_cap": 362167604531,
+        "current_price": 3001.78
     },
     {
         "id": "binancecoin",
         "symbol": "bnb",
         "name": "BNB",
-        "market_cap": 116793156640,
-        "current_price": 848.62
+        "market_cap": 118296635390,
+        "current_price": 858.34
     },
     {
         "id": "ripple",
         "symbol": "xrp",
         "name": "XRP",
-        "market_cap": 114380449652,
-        "current_price": 1.89
+        "market_cap": 117261482306,
+        "current_price": 1.94
     },
     {
         "id": "solana",
         "symbol": "sol",
         "name": "Solana",
-        "market_cap": 70462449180,
-        "current_price": 125.33
+        "market_cap": 70731785744,
+        "current_price": 125.95
     },
     {
         "id": "tron",
         "symbol": "trx",
         "name": "TRON",
-        "market_cap": 26352924027,
-        "current_price": 0.278343
+        "market_cap": 27025790250,
+        "current_price": 0.285511
     },
     {
         "id": "staked-ether",
         "symbol": "steth",
         "name": "Lido Staked Ether",
-        "market_cap": 25984269478,
-        "current_price": 2966.03
+        "market_cap": 26303551903,
+        "current_price": 3000.31
     },
     {
         "id": "dogecoin",
         "symbol": "doge",
         "name": "Dogecoin",
-        "market_cap": 22025853967,
-        "current_price": 0.131148
+        "market_cap": 22172729409,
+        "current_price": 0.132126
     },
     {
         "id": "figure-heloc",
         "symbol": "figr_heloc",
         "name": "Figure Heloc",
-        "market_cap": 14374140869,
-        "current_price": 1.008
+        "market_cap": 14559285474,
+        "current_price": 1.021
     },
     {
         "id": "cardano",
         "symbol": "ada",
         "name": "Cardano",
-        "market_cap": 13724333917,
-        "current_price": 0.374511
+        "market_cap": 13610209325,
+        "current_price": 0.371791
     },
     {
         "id": "whitebit",
         "symbol": "wbt",
         "name": "WhiteBIT Coin",
-        "market_cap": 12422391911,
-        "current_price": 57.92
+        "market_cap": 12378511680,
+        "current_price": 57.8
     },
     {
         "id": "bitcoin-cash",
         "symbol": "bch",
         "name": "Bitcoin Cash",
-        "market_cap": 11966133032,
-        "current_price": 599.48
+        "market_cap": 11742280802,
+        "current_price": 587.87
     },
     {
         "id": "wrapped-steth",
         "symbol": "wsteth",
         "name": "Wrapped stETH",
-        "market_cap": 11480763188,
-        "current_price": 3626.81
+        "market_cap": 11620960966,
+        "current_price": 3671.96
     },
     {
         "id": "wrapped-bitcoin",
         "symbol": "wbtc",
         "name": "Wrapped Bitcoin",
-        "market_cap": 10988752790,
-        "current_price": 87935
+        "market_cap": 11066989372,
+        "current_price": 88653
     },
     {
         "id": "wrapped-beacon-eth",
         "symbol": "wbeth",
         "name": "Wrapped Beacon ETH",
-        "market_cap": 10515525779,
-        "current_price": 3222.86
-    },
-    {
-        "id": "binance-bridged-usdt-bnb-smart-chain",
-        "symbol": "bsc-usd",
-        "name": "Binance Bridged USDT (BNB Smart Chain)",
-        "market_cap": 8983829162,
-        "current_price": 0.999404
+        "market_cap": 10636040901,
+        "current_price": 3260.83
     },
     {
         "id": "wrapped-eeth",
         "symbol": "weeth",
         "name": "Wrapped eETH",
-        "market_cap": 8894948121,
-        "current_price": 3216.46
+        "market_cap": 9178822075,
+        "current_price": 3255.11
+    },
+    {
+        "id": "binance-bridged-usdt-bnb-smart-chain",
+        "symbol": "bsc-usd",
+        "name": "Binance Bridged USDT (BNB Smart Chain)",
+        "market_cap": 8981204570,
+        "current_price": 0.999251
     },
     {
         "id": "chainlink",
         "symbol": "link",
         "name": "Chainlink",
-        "market_cap": 8746666862,
-        "current_price": 12.55
+        "market_cap": 8923612570,
+        "current_price": 12.62
     },
     {
         "id": "monero",
         "symbol": "xmr",
         "name": "Monero",
-        "market_cap": 8102615397,
-        "current_price": 439.02
+        "market_cap": 8722704012,
+        "current_price": 471.92
     },
     {
         "id": "weth",
         "symbol": "weth",
         "name": "WETH",
-        "market_cap": 7557989790,
-        "current_price": 2969.21
+        "market_cap": 7518629309,
+        "current_price": 3004.41
     }
 ]

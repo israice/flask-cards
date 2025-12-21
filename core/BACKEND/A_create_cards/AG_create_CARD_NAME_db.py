@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configuration: target column index (1-based)
-COLUMN_INDEX = 8  # e.g. 6 means the sixth column
+COLUMN_INDEX = 9  # e.g. 6 means the sixth column
 
 # Read number of cards to generate from environment variable
 # Default to 5 if not set or invalid

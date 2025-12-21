@@ -14,7 +14,7 @@ if not FILENAME:
     exit(1)
 
 # ==== SETTINGS ====
-NUM_IDS_TO_ADD = 5
+NUM_IDS_TO_ADD = int(os.getenv("NUMBER_OF_CARDS", 5))
 ID_PREFIX = 'Card_'
 ID_RANGE_START = 1
 ID_RANGE_END = 999999

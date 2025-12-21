@@ -1,36 +1,41 @@
 <!-- core/FRONTEND/card_1.html -->
 <template id="card-template">
-  <div class="card">
-    <div class="card-inner">
-      <!-- FRONT SIDE -->
-      <div class="card-face card-front">
-        <img class="card-img-top" alt="Card image">
-        <div class="card-body">
+  <!-- Wrapper for the whole item -->
+  <div class="card-wrapper">
+
+    <!-- LEFT: Flippable Card (Image + Overlay) -->
+    <div class="card-flip-container">
+      <div class="card-inner">
+        <!-- FRONT -->
+        <div class="card-face card-front">
+          <img class="card-img-top card-img-full" alt="Card image">
+          <div class="card-overlay">
+            <div class="overlay-stat"><strong>CHAIN:</strong><span class="card-chain"></span></div>
+            <div class="overlay-stat"><strong>NAME:</strong><span class="card-name"></span></div>
+            <div class="overlay-stat"><strong>THEME:</strong><span class="card-theme"></span></div>
+            <div class="overlay-stat"><strong>TYPE:</strong><span class="card-type"></span></div>
+            <div class="overlay-stat"><strong>DATE:</strong><span class="card-date"></span></div>
+          </div>
+        </div>
+        <!-- BACK -->
+        <div class="card-face card-back">
           <div class="stats">
-            <div class="stat"><strong>CARD_CHAIN:</strong><span class="card-chain"></span></div>
-            <div class="stat"><strong>CARD_NAME:</strong><span class="card-name"></span></div>
-            <div class="stat"><strong>CARD_THEME:</strong><span class="card-theme"></span></div>
-            <div class="stat"><strong>CARD_TYPE:</strong><span class="card-type"></span></div>
-            <div class="stat stat-coins"></div> <!-- Container for GIF column and header -->
-            <div class="stat"><strong>CARD_ID:</strong><span class="card-id"></span></div>
-            <div class="stat"><strong>PACK_ID:</strong><span class="pack-id"></span></div>
-            <div class="stat"><strong>CARD_DATE:</strong><span class="card-date"></span></div>
+            <div class="stat"><strong>ID:</strong><span class="card-id"></span></div>
+            <div class="stat"><strong>PACK:</strong><span class="pack-id"></span></div>
+            <div class="stat"><strong>CHAIN:</strong><span class="card-chain"></span></div>
+            <div class="stat"><strong>TYPE:</strong><span class="card-type"></span></div>
           </div>
         </div>
       </div>
-      <!-- BACK SIDE -->
-      <div class="card-face card-back">
-        <div class="stats">
-          <div class="stat"><strong>CARD_CHAIN:</strong><span class="card-chain"></span></div>
-          <div class="stat"><strong>CARD_NAME:</strong><span class="card-name"></span></div>
-          <div class="stat"><strong>CARD_THEME:</strong><span class="card-theme"></span></div>
-          <div class="stat"><strong>CARD_TYPE:</strong><span class="card-type"></span></div>
-          <div class="stat stat-coins"></div>
-          <div class="stat"><strong>CARD_ID:</strong><span class="card-id"></span></div>
-          <div class="stat"><strong>PACK_ID:</strong><span class="pack-id"></span></div>
-          <div class="stat"><strong>CARD_DATE:</strong><span class="card-date"></span></div>
-        </div>
-      </div>
     </div>
+
+    <!-- RIGHT: Static Coins Panel -->
+    <div class="card-coins-panel">
+      <h5
+        style="margin-top:0; font-size:1rem; border-bottom:1px solid #eee; padding-bottom:0.5rem; margin-bottom:0.5rem;">
+        Assets</h5>
+      <div class="stat stat-coins"></div>
+    </div>
+
   </div>
 </template>

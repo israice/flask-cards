@@ -22,7 +22,7 @@ FILE_ENCODING       = "utf-8"
 
 # CSV processing settings
 CSV_SEPARATOR       = ","                 # Field separator in CSV
-TARGET_COLUMN_INDEX = 4                   # Index of the column to insert coins next to
+TARGET_COLUMN_INDEX = 5                   # Index of the column to insert coins next to
 QUOTE_CHAR          = '"'                 # Quote character to wrap coin list
 
 # Randomization settings
@@ -71,10 +71,15 @@ def patch_csv(csv_path, symbols):
         line = data_rows[idx]
         parts = line.split(CSV_SEPARATOR)
 
-        # Check criteria: enough columns, left column non-empty, not already patched
-        if (len(parts) > TARGET_COLUMN_INDEX
+        # Check criteria: enough columns (at least up to Owner), left column non-empty, not already patched
+        if (len(parts) >= TARGET_COLUMN_INDEX
             and parts[TARGET_COLUMN_INDEX-1].strip()
             and QUOTE_CHAR not in line):
+
+            # Ensure parts has enough elements up to TARGET_COLUMN_INDEX (Desc column at index 5)
+            # We need parts[0..5] to exist.
+            while len(parts) <= TARGET_COLUMN_INDEX:
+                parts.append('')
 
             # Choose random coins
             count = random.randint(MIN_COINS_COUNT, MAX_COINS_COUNT)

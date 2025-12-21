@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configuration: target column index (1-based)
-COLUMN_INDEX = 10  # e.g. 6 means the sixth column
+COLUMN_INDEX = 11  # e.g. 6 means the sixth column
 
 # Read number of entries to pick strictly from environment variable
 # Raise error if missing or not an integer

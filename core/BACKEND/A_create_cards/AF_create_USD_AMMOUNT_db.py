@@ -20,8 +20,8 @@ SYSTEM_FULL_DB_CSV = os.getenv("SYSTEM_FULL_DB_CSV")
 FILE_ENCODING = "utf-8"
 
 # Column indexes (0-based)
-COIN_COLUMN_INDEX   = 5  # coins list is in the 4th column (index 3)
-TARGET_COLUMN_INDEX = 6  # insert generated values into the 5th column (index 4)
+COIN_COLUMN_INDEX   = 6  # coins list is in the 4th column (index 3)
+TARGET_COLUMN_INDEX = 7  # insert generated values into the 5th column (index 4)
 
 # Randomization limits
 MIN_VALUE = 0.02   # minimum allowed for each generated value
