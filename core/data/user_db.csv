@@ -1,3 +1,5 @@
-USER_WHITELIST
-user1
-user2
+USER_WHITELIST,PASSWORD
+user1,user1
+user2,user2
+admin,admin
+user,user

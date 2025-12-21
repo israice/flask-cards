@@ -243,9 +243,11 @@ ADMIN page
 ### v1.008
 - localhost added as another domain
 - checking auto update on ubuntu server side from github webhook
+- fixed user as admin if in whitelist
 
 ### v999 FUTURE PLANS
 
+- change data to new csv
 - add stats to each card
 - fix domain on pc2 and laptop1 for this docker
 - run docker on linux pc2
@@ -311,7 +313,7 @@ docker compose -f docker-compose.prod.yml logs --tail=20
 ### Quick github update
 
 git add .
-git commit -m "v1.008 - checking auto update on ubuntu server side from github webhook test7"
+git commit -m "v1.008 - fixed user as admin if in whitelist"
 git push
 
 </details>

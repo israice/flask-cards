@@ -17,20 +17,31 @@ def load_records_from_csv():
         return list(reader)
 
 def load_users_auth():
-    """Load users authentication data from CSV"""
-    users_auth_path = current_app.config.get('USERS_AUTH_CSV')
-    if not users_auth_path or not os.path.exists(users_auth_path):
+    """Load users authentication data from USER_DB CSV"""
+    # Use USER_DB from config
+    user_db_path = current_app.config.get('USER_DB')
+    if not user_db_path or not os.path.exists(user_db_path):
         return {}
 
+    # Load admin whitelist
+    admin_db_path = current_app.config.get('ADMIN_DB')
+    admin_set = load_whitelist(admin_db_path) if admin_db_path else set()
+
     users = {}
-    with open(users_auth_path, newline='', encoding='utf-8') as f:
+    with open(user_db_path, newline='', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
-            username = row.get('USERNAME', '').strip()
+            # Header in user_db.csv is USER_WHITELIST, PASSWORD
+            username = row.get('USER_WHITELIST', '').strip()
+            password = row.get('PASSWORD', '').strip()
+            
             if username:
+                # Check if username is in admin whitelist or is 'admin' (fallback)
+                is_admin = (username.lower() in admin_set) or (username.lower() == 'admin')
+                user_type = 'ADMIN' if is_admin else 'USER'
                 users[username] = {
-                    'password_hash': row.get('PASSWORD_HASH', ''),
-                    'user_type': row.get('USER_TYPE', 'USER')
+                    'password': password,
+                    'user_type': user_type
                 }
     return users
 
@@ -41,7 +52,7 @@ def authenticate_user(username, password):
     if not user:
         return None
 
-    if check_password_hash(user['password_hash'], password):
+    if user['password'] == password:
         return {
             'username': username,
             'user_type': user['user_type']
