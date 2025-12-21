@@ -8,21 +8,15 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+import sys
+import qrcode
+# Adjust path to import core
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+from core.database import query_db
+
 # Configurable parameters from environment
-INPUT_FILE = os.getenv('SYSTEM_FULL_DB_CSV')
 OUTPUT_DIR = os.getenv('QR_CODES_FOLDER')
 ENCODING = 'utf-8'
-
-# Validate environment variables
-if not INPUT_FILE:
-    raise ValueError("Environment variable (input CSV path) is not set.")
-if not OUTPUT_DIR:
-    raise ValueError("Environment variable QR_CODES_FOLDER (output directory) is not set.")
-
-# CSV column indices (0-based)
-URL_COLUMN_INDEX = 12       # Column index for QR code data (KEY_IN)
-FILENAME_COLUMN_INDEX = 0  # Column index for output file name key (CARD_ID)
-MAX_INDEX = max(URL_COLUMN_INDEX, FILENAME_COLUMN_INDEX)
 
 # QR code settings
 QR_VERSION = 1
@@ -43,37 +37,35 @@ def sanitize_filename(name):
     sanitized = INVALID_FILENAME_CHARS.sub('_', name)
     return sanitized.strip()
 
-# Ensure output directory exists
-if not os.path.exists(OUTPUT_DIR):
-    os.makedirs(OUTPUT_DIR)
+def generate_qr_codes():
+    if not OUTPUT_DIR:
+        print("QR_CODES_FOLDER env var not set.")
+        return
 
-# Process CSV file and generate QR codes
-with open(INPUT_FILE, 'r', encoding=ENCODING) as file:
-    csv_reader = csv.reader(file)
-    header = next(csv_reader, None)  # Skip header row if present
+    # Ensure output directory exists
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
 
-    for row_num, row in enumerate(csv_reader, start=2):  # start=2 accounts for header line
-        # Skip empty or malformed rows
-        if not row or len(row) <= MAX_INDEX:
+    rows = query_db("SELECT card_id, card_url FROM cards")
+    
+    count = 0
+    skipped = 0
+    
+    for row in rows:
+        cid = row['card_id']
+        url = row['card_url']
+        
+        if not cid or not url:
             continue
-
-        url = row[URL_COLUMN_INDEX].strip()
-        raw_name = row[FILENAME_COLUMN_INDEX].strip()
-
-        if not url:
-            # Skip rows without URL data
-            print(f"Skipping row {row_num}, empty URL.")
-            continue
-
-        # Sanitize the base filename (CARD_ID)
-        safe_name = sanitize_filename(raw_name)
+            
+        safe_name = sanitize_filename(cid)
         output_filename = FILE_NAME_TEMPLATE.format(filename=safe_name)
         output_path = os.path.join(OUTPUT_DIR, output_filename)
-
+        
         if os.path.exists(output_path):
-            # Skip generation if file already exists
+            skipped += 1
             continue
-
+            
         # Create QR code object
         qr = qrcode.QRCode(
             version=QR_VERSION,
@@ -87,6 +79,15 @@ with open(INPUT_FILE, 'r', encoding=ENCODING) as file:
         # Generate image and save to file
         qr_image = qr.make_image(fill_color=FILL_COLOR, back_color=BACK_COLOR)
         qr_image.save(output_path)
+        count += 1
+        
+    print(f"Generated {count} QR codes, skipped {skipped}.")
+
+def main():
+    generate_qr_codes()
+
+if __name__ == "__main__":
+    main()
 
 
 

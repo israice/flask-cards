@@ -33,17 +33,39 @@ except ValueError:
     exit(1)
 
 
-def read_existing_ids(filename, column_index, dialect):
-    """Read existing IDs from the CSV at the target column index without header check."""
-    existing = set()
-    if not os.path.exists(filename):
-        return existing
-    with open(filename, newline='', encoding='utf-8') as f:
-        reader = csv.reader(f, dialect)
-        for row in reader:
-            if len(row) > column_index and row[column_index].strip():
-                existing.add(row[column_index].strip())
-    return existing
+import sys
+# Adjust path to import core
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+from core.database import query_db, update_card
+
+def read_existing_pack_ids():
+    rows = query_db("SELECT pack_id FROM cards WHERE pack_id IS NOT NULL AND pack_id != ''")
+    return {r['pack_id'] for r in rows}
+
+def update_pack_ids(new_ids, repeat_count):
+    """
+    Assign each new_id to 'repeat_count' cards that define have empty pack_id.
+    """
+    # Total needed
+    total_needed = len(new_ids) * repeat_count
+    
+    # Get cards to update
+    rows = query_db("SELECT card_id FROM cards WHERE pack_id IS NULL OR pack_id = ''")
+    
+    current_row_idx = 0
+    updated_count = 0
+    
+    for pid in new_ids:
+        for _ in range(repeat_count):
+            if current_row_idx >= len(rows):
+                break
+            
+            card_id = rows[current_row_idx]['card_id']
+            update_card(card_id, 'pack_id', pid)
+            updated_count += 1
+            current_row_idx += 1
+            
+    print(f"Updated {updated_count} cards with pack_id.")
 
 def generate_unique_ids(prefix, existing, count, start, end):
     """Generate a list of unique IDs not in existing set."""
@@ -53,39 +75,9 @@ def generate_unique_ids(prefix, existing, count, start, end):
         raise ValueError(f"Not enough unique IDs (needed {count}, available {len(available)})")
     return random.sample(available, count)
 
-def append_ids(filename, new_ids, column_index, dialect):
-    """Insert new IDs vertically: each in its own row under the target column, preserving existing structure."""
-    with open(filename, newline='', encoding='utf-8') as f:
-        rows = list(csv.reader(f, dialect))
-    headers = rows[0] if rows else []
-    data = rows[1:] if rows else []
-
-    for new_id in new_ids:
-        for _ in range(NUMBER_OF_CARDS):  # repeat count from .env
-            placed = False
-            for row in data:
-                if len(row) <= column_index:
-                    row.extend([''] * (column_index + 1 - len(row)))
-                if not row[column_index].strip():
-                    row[column_index] = new_id
-                    placed = True
-                    break
-            if not placed:
-                new_row = [''] * (len(headers) if headers else column_index + 1)
-                new_row[column_index] = new_id
-                data.append(new_row)
-
-    with open(filename, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.writer(f, dialect)
-        if headers:
-            writer.writerow(headers)
-        writer.writerows(data)
-
 def main():
-    dialect = csv.get_dialect('excel')
-
     try:
-        existing = read_existing_ids(FILENAME, TARGET_COLUMN_INDEX, dialect)
+        existing = read_existing_pack_ids()
     except Exception as e:
         print(f"ERROR: {e}")
         return
@@ -100,11 +92,7 @@ def main():
         print(f"ERROR: {e}")
         return
 
-    try:
-        append_ids(FILENAME, unique_ids, TARGET_COLUMN_INDEX, dialect)
-    except Exception as e:
-        print(f"ERROR: {e}")
-
+    update_pack_ids(unique_ids, NUMBER_OF_CARDS)
 
 if __name__ == '__main__':
     main()

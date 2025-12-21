@@ -5,8 +5,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SOURCE_FILE = os.path.join("core", "data", "not_used", "GAME_STATS.csv")
-TARGET_FILE = os.path.join("core", "data", "system_full_db.csv")
-TARGET_COLUMN_INDEX = 17  # 1-based (17th column) -> Index 16 (0-based) for POWER_COMBAT
+import sys
+# Adjust path to import core
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+from core.database import query_db, update_card
+
+SOURCE_FILE = os.path.join("core", "data", "not_used", "GAME_STATS.csv")
 
 def read_source_data(file_path):
     if not os.path.exists(file_path):
@@ -21,38 +25,24 @@ def read_source_data(file_path):
                 data.append(row['POWER_COMBAT'])
     return data
 
-def insert_into_target(data, file_path, col_index):
-    if not os.path.exists(file_path):
+def update_power_combat(data):
+    if not data:
         return
 
-    with open(file_path, newline='', encoding='utf-8') as csvfile:
-        reader = csv.reader(csvfile)
-        rows = [row for row in reader]
+    rows = query_db("SELECT card_id FROM cards WHERE power_combat IS NULL OR power_combat = ''")
     
-    start_row_idx = 1
-    current_data_idx = 0
-    
-    for i in range(start_row_idx, len(rows)):
-        row = rows[i]
-        
-        if not data:
-            val = ""
-        else:
-            val = data[current_data_idx % len(data)]
-            current_data_idx += 1
+    count = 0
+    for i, row in enumerate(rows):
+        cid = row['card_id']
+        val = data[i % len(data)]
+        update_card(cid, 'power_combat', val)
+        count += 1
             
-        if len(row) < col_index:
-            row.extend([''] * (col_index - len(row)))
-            
-        row[col_index-1] = val
-
-    with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerows(rows)
+    print(f"Updated {count} cards with power_combat.")
 
 def main():
     db_data = read_source_data(SOURCE_FILE)
-    insert_into_target(db_data, TARGET_FILE, TARGET_COLUMN_INDEX)
+    update_power_combat(db_data)
 
 if __name__ == "__main__":
     main()

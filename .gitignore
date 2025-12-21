@@ -2,6 +2,8 @@ test.py
 test.txt
 /core/data/cards_bank
 /core/data/qr_codes
+core/data/system_full_db.csv
+core/data/coins_db.json
 .env
 __pycache__/
 *.pyc

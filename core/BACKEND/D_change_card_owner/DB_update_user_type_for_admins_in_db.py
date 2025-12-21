@@ -1,42 +1,35 @@
-import pandas as pd
+import os
+import sys
 
-# Load admin whitelist from CSV and create a set of emails
-admin_whitelist_df = pd.read_csv('core/data/admin_db.csv')
-admin_whitelist = set(
-    admin_whitelist_df['ADMIN_WHITELIST']
-    .dropna()
-    .str.strip()
-)
+# Adjust path to import core
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+from core.database import get_db
 
-# Load user whitelist from CSV and create a set of emails
-user_whitelist_df = pd.read_csv('core/data/user_db.csv')
-user_whitelist = set(
-    user_whitelist_df['USER_WHITELIST']
-    .dropna()
-    .str.strip()
-)
+def main():
+    db = get_db()
+    
+    # 1. Default all to SYSTEM if owner is missing
+    db.execute("UPDATE cards SET user_type = 'SYSTEM' WHERE owner IS NULL OR owner = ''")
+    
+    # 2. Update based on known users (ADMIN or USER)
+    # SQLite supports correlated subquery updates
+    db.execute("""
+        UPDATE cards 
+        SET user_type = (SELECT role FROM users WHERE users.username = cards.owner)
+        WHERE owner IN (SELECT username FROM users)
+    """)
+    
+    # 3. Any remaining non-system that didn't match a user?
+    # Original logic: "All other cases default to SYSTEM".
+    # So if owner is set but NOT in users table, it becomes SYSTEM.
+    db.execute("""
+        UPDATE cards 
+        SET user_type = 'SYSTEM'
+        WHERE owner IS NOT NULL AND owner != '' AND owner NOT IN (SELECT username FROM users)
+    """)
+    
+    db.commit()
+    print("Updated user_type for all cards.")
 
-# Load the full system database
-full_df = pd.read_csv('core/data/system_full_db.csv')
-
-# Define function to update USER_TYPE based on CARD_OWNER value and whitelists
-def update_user_type(row):
-    owner = row.get('CARD_OWNER')
-    # If owner is missing or empty, classify as SYSTEM
-    if pd.isna(owner) or not str(owner).strip():
-        return 'SYSTEM'
-    owner_str = str(owner).strip()
-    # If owner is in user whitelist, set USER
-    if owner_str in user_whitelist:
-        return 'USER'
-    # If owner is in admin whitelist, set ADMIN
-    if owner_str in admin_whitelist:
-        return 'ADMIN'
-    # All other cases default to SYSTEM
-    return 'SYSTEM'
-
-# Apply the update function to USER_TYPE column
-full_df['USER_TYPE'] = full_df.apply(update_user_type, axis=1)
-
-# Save the updated DataFrame back to CSV (overwrite original)
-full_df.to_csv('core/data/system_full_db.csv', index=False)
+if __name__ == '__main__':
+    main()

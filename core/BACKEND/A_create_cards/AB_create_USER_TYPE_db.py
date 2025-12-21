@@ -21,44 +21,34 @@ if not num_rows_str or not num_rows_str.isdigit():
 
 num_rows_to_add = int(num_rows_str)
 
-# --- Read existing rows ---
-with open(csv_path, 'r', newline='', encoding='utf-8') as csvfile:
-    reader = list(csv.reader(csvfile))
-    existing_rows = reader
+import sys
+# Adjust path to import core
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+from core.database import query_db, update_card
 
-# --- Prepare rows to update ---
-updated_rows = []
-added_count = 0
+def update_user_type(count_needed):
+    """
+    Update empty user_type with 'SYSTEM'.
+    """
+    rows = query_db("SELECT card_id FROM cards WHERE user_type IS NULL OR user_type = ''")
+    
+    count = 0
+    for i, row in enumerate(rows):
+        if count >= count_needed:
+            break
+        
+        update_card(row['card_id'], 'user_type', WORD_TO_INSERT)
+        count += 1
+    
+    print(f"Updated {count} cards with user_type.")
 
-for row in existing_rows:
-    # Ensure row is long enough
-    while len(row) <= COLUMN_INDEX:
-        row.append('')
+def main():
+    if not num_rows_str or not num_rows_str.isdigit():
+        print(f"Invalid NUMBER_OF_CARDS: {num_rows_str}")
+        return
 
-    # Logic: if COLUMN_INDEX == 0 → always write if empty; if >0 → check left cell
-    should_insert = False
-    if COLUMN_INDEX == 0:
-        if not row[COLUMN_INDEX].strip():
-            should_insert = True
-    else:
-        if row[COLUMN_INDEX - 1].strip() and not row[COLUMN_INDEX].strip():
-            should_insert = True
+    update_user_type(int(num_rows_str))
 
-    if should_insert and added_count < num_rows_to_add:
-        row[COLUMN_INDEX] = WORD_TO_INSERT
-        added_count += 1
-
-    updated_rows.append(row)
-
-# --- Add new rows if needed ---
-while added_count < num_rows_to_add:
-    new_row = ['' for _ in range(COLUMN_INDEX + 1)]
-    new_row[COLUMN_INDEX] = WORD_TO_INSERT
-    updated_rows.append(new_row)
-    added_count += 1
-
-# --- Write updated rows back ---
-with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
-    writer = csv.writer(csvfile)
-    writer.writerows(updated_rows)
+if __name__ == "__main__":
+    main()
 

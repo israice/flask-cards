@@ -17,54 +17,74 @@ PREFIX_SEGMENT = 'card'       # the path segment to enforce in the URL prefix
 load_dotenv(ENV_FILE)
 
 # === RETRIEVE SETTINGS ===
-callback_url = os.getenv(ENV_GOOGLE_CALLBACK_URL)
-if not callback_url:
-    # Use default fallback if not set
-    callback_url = "https://nakama.weforks.org"
-    print(f"WARNING: {ENV_GOOGLE_CALLBACK_URL} not found in {ENV_FILE}. Using default: {callback_url}")
+import sys
+from urllib.parse import urlparse
+# Adjust path to import core
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+from core.database import query_db, update_card
 
-csv_file_path = os.getenv(ENV_SYSTEM_CARD_CSV)
-if not csv_file_path:
-    raise ValueError(f"{ENV_SYSTEM_CARD_CSV} not found in {ENV_FILE}")
+# === SETTINGS ===
+ENV_GOOGLE_CALLBACK_URL = 'GOOGLE_CALLBACK_URL'
+PREFIX_SEGMENT = 'card'
 
-# === PARSE NEW PREFIX ===
-parsed_callback = urlparse(callback_url)
-new_prefix = f"{parsed_callback.scheme}://{parsed_callback.netloc}/{PREFIX_SEGMENT}/"
-
-# === READ CSV DATA ===
-with open(csv_file_path, 'r', newline='', encoding='utf-8') as csvfile:
-    reader = list(csv.reader(csvfile))
-    header = reader[0]
-    rows = reader[1:]  # skip header
-
-# === DETECT EXISTING PREFIX ===
-existing_prefix = ''
-for row in rows:
-    if len(row) > URL_COLUMN_INDEX:
-        val = row[URL_COLUMN_INDEX]
-        if val.startswith('http://') or val.startswith('https://'):
-            parsed = urlparse(val)
+def update_urls(new_prefix):
+    rows = query_db("SELECT card_id, card_url FROM cards")
+    count = 0
+    
+    for row in rows:
+        cid = row['card_id']
+        current_val = row['card_url']
+        
+        if not current_val:
+            continue
+            
+        # Determine suffix
+        # If it starts with http, parse it
+        if current_val.startswith('http://') or current_val.startswith('https://'):
+            # It's a full URL, we want to maybe change prefix?
+            # Or assume the last part is the key.
+            # But wait, AM generates just a key `base64...`.
+            # So if it comes from AM, it looks like `XyZ...`.
+            # If it comes from old CSV, it might be `http://domain/card/XyZ...`.
+            
+            # Let's extract the key segment.
+            # Assuming format .../card/<key> or just <key>
+            
+            # We can just check if it starts with new_prefix.
+            if current_val.startswith(new_prefix):
+                continue
+                
+            # If it has a different prefix, replace it?
+            # Or if it's just raw key?
+            
+            # Safe bet: assume last segment is key if it looks like URL
+            parsed = urlparse(current_val)
             path_parts = parsed.path.strip('/').split('/')
-            if path_parts and path_parts[0] == PREFIX_SEGMENT:
-                existing_prefix = f"{parsed.scheme}://{parsed.netloc}/{PREFIX_SEGMENT}/"
-            else:
-                existing_prefix = f"{parsed.scheme}://{parsed.netloc}/"
-            break  # stop after finding first valid URL
+            key = path_parts[-1] if path_parts else current_val
+        else:
+            # Assume it is just the key
+            key = current_val
+            
+        new_url = f"{new_prefix}{key}"
+        
+        if new_url != current_val:
+            update_card(cid, 'card_url', new_url)
+            count += 1
 
-# === PROCESS ROWS AND APPLY NEW PREFIX ===
-for row in rows:
-    if len(row) > URL_COLUMN_INDEX:
-        value = row[URL_COLUMN_INDEX]
-        # Remove existing prefix if present
-        if existing_prefix and value.startswith(existing_prefix):
-            value = value[len(existing_prefix):]
-        # Apply new prefix
-        row[URL_COLUMN_INDEX] = new_prefix + value
+    print(f"Updated {count} card URLs.")
 
-# === WRITE BACK CSV ===
-with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
-    writer = csv.writer(csvfile)
-    writer.writerow(header)
-    writer.writerows(rows)
+def main():
+    callback_url = os.getenv(ENV_GOOGLE_CALLBACK_URL)
+    if not callback_url:
+        callback_url = "https://nakama.weforks.org"
+        print(f"WARNING: using default: {callback_url}")
+        
+    parsed_callback = urlparse(callback_url)
+    new_prefix = f"{parsed_callback.scheme}://{parsed_callback.netloc}/{PREFIX_SEGMENT}/"
+    
+    update_urls(new_prefix)
+
+if __name__ == "__main__":
+    main()
 
 

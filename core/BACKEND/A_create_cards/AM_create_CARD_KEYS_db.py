@@ -12,48 +12,49 @@ if not dotenv_path:
     raise FileNotFoundError(".env file not found")
 load_dotenv(dotenv_path)
 
-# Get CSV file path from environment variable
-file_path = os.getenv("SYSTEM_FULL_DB_CSV")
-if not file_path:
-    raise ValueError("Environment variable SYSTEM_FULL_DB_CSV not found in .env")
-
-# Define target column indexes (0-based)
-CARD_URL_INDEX = 12     # CARD_URL column
-CARD_KEYS_INDEX = 13    # CARD_KEYS column
+import sys
+import base64
+# Adjust path to import core
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+from core.database import query_db, update_card
 
 # Define size of each key in bytes
 KEY_SIZE = 32
 
-# Read the CSV file into memory
-with open(file_path, mode="r", newline="", encoding="utf-8") as f:
-    rows = list(csv.reader(f))
+def update_keys():
+    """
+    Check for cards with empty card_url or card_keys and fill them.
+    In this DB schema, card_url is just the random key part perhaps? 
+    The original script generated: `generated_url_key`.
+    AN script adds prefix later.
+    """
+    rows = query_db("SELECT card_id, card_url, card_keys FROM cards")
+    
+    count_url = 0
+    count_keys = 0
+    
+    for row in rows:
+        cid = row['card_id']
+        url = row['card_url']
+        keys = row['card_keys']
+        
+        updated = False
+        
+        if not url or not url.strip():
+            new_url_key = base64.urlsafe_b64encode(os.urandom(KEY_SIZE)).decode("utf-8")
+            update_card(cid, 'card_url', new_url_key)
+            count_url += 1
+            
+        if not keys or not keys.strip():
+            new_keys_key = base64.urlsafe_b64encode(os.urandom(KEY_SIZE)).decode("utf-8")
+            update_card(cid, 'card_keys', new_keys_key)
+            count_keys += 1
 
-if len(rows) < 2:
-    raise ValueError("CSV must contain a header row and at least one data row")
+    print(f"Updated {count_url} cards with url, {count_keys} cards with keys.")
 
-header = rows[0]
-data_rows = rows[1:]
+def main():
+    update_keys()
 
-# Process each data row
-for row in data_rows:
-    # Ensure the row has enough columns for CARD_URL and CARD_KEYS
-    missing_columns = (CARD_KEYS_INDEX + 1) - len(row)
-    if missing_columns > 0:
-        row.extend([''] * missing_columns)
-
-    # Fill CARD_URL if it is empty
-    if not row[CARD_URL_INDEX].strip():
-        generated_url_key = base64.urlsafe_b64encode(os.urandom(KEY_SIZE)).decode("utf-8")
-        row[CARD_URL_INDEX] = generated_url_key
-
-    # Fill CARD_KEYS if it is empty
-    if not row[CARD_KEYS_INDEX].strip():
-        generated_keys_key = base64.urlsafe_b64encode(os.urandom(KEY_SIZE)).decode("utf-8")
-        row[CARD_KEYS_INDEX] = generated_keys_key
-
-# Write all rows back to the CSV, preserving existing data
-with open(file_path, mode="w", newline="", encoding="utf-8") as f:
-    writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
-    writer.writerow(header)
-    writer.writerows(data_rows)
+if __name__ == "__main__":
+    main()
 

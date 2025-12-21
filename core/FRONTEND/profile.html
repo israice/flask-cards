@@ -275,9 +275,58 @@
           const coinsArr = (card.CARD_COINS || '').split(',').map(s => s.trim()).filter(s => s);
           const amountArr = (card.USD_AMMOUNT || '').split(',').map(s => s.trim());
           const isStatus1 = (card.status === 'STATUS_1');
+          const isStatus3 = (card.status === 'STATUS_3');
+
+          // Add click listener for activation if not already valid/active
+          // Logic: If NOT Status 3, clicking prompts to/activate.
+          // Note: User said click "where USD part should display". That IS the coinsContainer.
+          // We need to ensure we don't add multiple listeners.
+          // Better to set onclick directly or handle via specific class/attribute state.
+
+          if (!coinsContainer.hasAttribute('data-click-setup')) {
+            coinsContainer.setAttribute('data-click-setup', 'true');
+            coinsContainer.style.cursor = 'pointer';
+            coinsContainer.addEventListener('click', (e) => {
+              // Determine current status from the DOM or data attribute
+              // The parent scope 'card' variable here is from the closure of updateCardElement.
+              // However, updateCardElement is called repeatedly.
+              // It is safer to read the card-id from the element and fetch current state or trust the closure?
+              // The closure 'card' IS the latest data provided to updateCardElement.
+
+              // If already active, maybe do nothing?
+              if (el.dataset.status === 'STATUS_3') return;
+
+              if (confirm("ACTIVATE CARD?\n\nPress OK to Reveal USD.")) {
+                fetch('/activate_card', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ card_id: card.CARD_ID })
+                })
+                  .then(r => r.json())
+                  .then(data => {
+                    if (data.status === 'success') {
+                      // Force a reload or wait for next poll
+                      // We can optimistically update data-status
+                      el.dataset.status = 'STATUS_3';
+                      // The next poll (5s) will refresh the UI fully.
+                      // Or we could trigger loadCards() immediately.
+                      loadCards();
+                    } else {
+                      alert("Activation failed: " + data.message);
+                    }
+                  })
+                  .catch(err => alert("Error: " + err));
+              }
+            });
+          }
+
+          // Store status on element for the click handler to check latest
+          el.dataset.status = card.status;
+
 
           // Serialize data to check for changes
-          const newDataString = JSON.stringify({ coinsArr, amountArr, isStatus1 });
+          // Include Status3 in hash
+          const newDataString = JSON.stringify({ coinsArr, amountArr, isStatus1, isStatus3 });
           const currentDataString = coinsContainer.getAttribute('data-coins-hash');
 
           // Only rebuild if data changed
@@ -286,16 +335,48 @@
             coinsContainer.setAttribute('data-coins-hash', newDataString);
             coinsContainer.innerHTML = '';
 
+            // Visual state for unactivated cards?
+            // If not status 3, maybe we hide the amounts?
+            // The existing logic: 
+            // isStatus1 -> 2 cols (Label | Icon)
+            // !isStatus1 -> 4 cols (Label | Icon | Name | Amount)
+            //
+            // New Requirement: "Always display with USD" ONLY after STATUS_3.
+            // So if STATUS_2 (Owned but not active) -> Should it show amounts?
+            // User said: "if CONTINUE ... Status_3 ... from this moment always display with USD".
+            // Implies before STATUS_3, it does NOT show USD.
+
+            // So:
+            // STATUS_1 (Created): No USD. (2 cols?)
+            // STATUS_2 (Owned): No USD. (2 cols? or 4 cols with hidden amount?) 
+            // STATUS_3 (Active): With USD. (4 cols)
+
+            // Re-evaluating existing logic:
+            // if (isStatus1) -> 2 cols.
+            // else -> 4 cols.
+
+            // If we want to hide USD for STATUS_2, we should treat it like STATUS_1 visually? 
+            // OR use a new visual state with "ACTIVATION REQUIRED"?
+            // Assuming "Show USD" means the full 4-col table.
+
+            const showFullTable = isStatus3;
+            // If STATUS_2, we might want to show Name but not Amount? Or just same as STATUS_1?
+            // User phrasing: "STATUS_3 ... already displays amount ... " implies STATUS_2 does not.
+            // Let's assume STATUS_1 and STATUS_2 look "compact" (2 cols) or "hidden values".
+            // Let's stick to: Show Full Table (4 cols) ONLY if STATUS_3.
+
             const table = document.createElement('table');
             const colgroup = document.createElement('colgroup');
 
-            if (isStatus1) {
-              // Two cols
+            if (!showFullTable) {
+              // Compact Mode (Hidden USD)
+              // Two cols: Label | Icon
               const c1 = document.createElement('col'); c1.style.width = '3rem';
               const c2 = document.createElement('col'); c2.style.width = '20px';
               colgroup.append(c1, c2);
             } else {
-              // Four cols
+              // Full Mode (Visible USD)
+              // Four cols: Label | Icon | Name | Amount
               ['3rem', '20px', 'auto', 'auto'].forEach(w => {
                 const c = document.createElement('col');
                 c.style.width = w;
@@ -305,7 +386,10 @@
             table.appendChild(colgroup);
 
             // Pre-built GIF HTML
+            // Maybe different GIF for Status 3?
+            // Existing: Status 1 -> Specific GIF, Else -> Other GIF.
             const gifUrl = isStatus1 ? `https://cdn.pixabay.com/animation/2024/08/15/20/58/20-58-49-129_512.gif` : `https://cdn.pixabay.com/animation/2022/12/21/03/30/03-30-53-418_512.gif`;
+
             const gifHtml =
               '<div style="width:18px;height:18px;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;">' +
               `<img src="${gifUrl}" style="width:28px;height:28px;transform:scale(1.8);object-fit:contain;pointer-events:none;">` +
@@ -329,7 +413,7 @@
               tdIcon.innerHTML = gifHtml;
               tr.appendChild(tdIcon);
 
-              if (!isStatus1) {
+              if (showFullTable) {
                 // Name
                 const tdName = document.createElement('td');
                 tdName.textContent = coin;
@@ -421,6 +505,7 @@
             console.error('Failed to load cards:', err);
           }
         }
+        window.loadCards = loadCards;
         loadCards();
         setInterval(loadCards, 5000);
       }

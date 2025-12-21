@@ -9,106 +9,65 @@ from werkzeug.security import check_password_hash
 
 bp = Blueprint('main', __name__)
 
-# Helpers using current_app config
+from core.database import get_db, query_db
 
-def load_records_from_csv():
-    with open(current_app.config['SYSTEM_CSV'], newline='', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        return list(reader)
-
-def load_users_auth():
-    """Load users authentication data from USER_DB CSV"""
-    # Use USER_DB from config
-    user_db_path = current_app.config.get('USER_DB')
-    if not user_db_path or not os.path.exists(user_db_path):
-        return {}
-
-    # Load admin whitelist
-    admin_db_path = current_app.config.get('ADMIN_DB')
-    admin_set = load_whitelist(admin_db_path) if admin_db_path else set()
-
-    users = {}
-    with open(user_db_path, newline='', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            # Header in user_db.csv is USER_WHITELIST, PASSWORD
-            username = (row.get('USER_WHITELIST') or '').strip()
-            password = (row.get('PASSWORD') or '').strip()
-            
-            if username:
-                # Check if username is in admin whitelist or is 'admin' (fallback)
-                is_admin = (username.lower() in admin_set) or (username.lower() == 'admin')
-                user_type = 'ADMIN' if is_admin else 'USER'
-                users[username] = {
-                    'password': password,
-                    'user_type': user_type
-                }
-    return users
+def load_records_from_db():
+    return query_db('SELECT * FROM cards')
 
 def authenticate_user(username, password):
     """Authenticate user with username and password"""
-    users = load_users_auth()
-    user = users.get(username)
-    if not user:
-        return None
-
-    if user['password'] == password:
+    user = query_db('SELECT * FROM users WHERE username = ?', [username], one=True)
+    if user and user['password'] == password:
         return {
-            'username': username,
-            'user_type': user['user_type']
+            'username': user['username'],
+            'user_type': user['role']
         }
     return None
 
-def load_whitelist(path):
-    if not os.path.exists(path):
-        return set()
-    with open(path, newline='', encoding='utf-8') as f:
-        reader = csv.reader(f)
-        rows = list(reader)
-        if len(rows) < 2:
-            return set()
-        return {r[0].strip().lower() for r in rows[1:]}
-
 def determine_user_is_admin(username):
     """Check if user is admin based on username"""
-    users = load_users_auth()
-    user = users.get(username)
+    user = query_db('SELECT * FROM users WHERE username = ?', [username], one=True)
     if user:
-        return user['user_type'] == 'ADMIN'
+        return user['role'] == 'ADMIN'
+    # Fallback/Bootstrapping: if 'admin' user doesn't exist in DB yet but tries to login, handle it? 
+    # For now, rely on DB.
     return False
 
 def get_user_cards(username):
-    records = load_records_from_csv()
+    # Depending on how exact the match needs to be. CSV was case-insensitive often.
+    # Let's try exact match first, or use LIKE.
+    records = query_db('SELECT * FROM cards WHERE owner = ? COLLATE NOCASE', [username])
     cards = []
     for rec in records:
-        if (rec.get('CARD_OWNER') or '').strip().lower() != username.lower():
-            continue
-        cid = rec.get('CARD_ID')
+        cid = rec['card_id']
         if not cid:
             continue
-        raw_status = rec.get('CARD_STATUS')
-        status = raw_status.strip() if raw_status else ''
-
+            
+        # Image logic
+        url = None
         for ext in ['.png', '.jpg', '.jpeg']:
-            fname = cid + ext
-            folder = current_app.config['CARDS_FOLDER']
-            path = os.path.join(folder, fname)
+            fname = f"{cid}{ext}"
+            path = os.path.join(current_app.config['CARDS_FOLDER'], fname)
             if os.path.exists(path):
                 url = url_for('main.card_image', filename=fname)
-                cards.append({
-                    'url': url,
-                    'CARD_ID': cid,
-                    'status': status,
-                    'CARD_CHAIN': rec.get('CARD_CHAIN'),
-                    'CARD_NAME': rec.get('CARD_NAME'),
-                    'CARD_THEME': rec.get('CARD_THEME'),
-                    'CARD_TYPE': rec.get('CARD_TYPE'),
-                    'CARD_COINS': rec.get('CARD_COINS'),
-                    'USD_AMMOUNT': rec.get('USD_AMMOUNT'),
-                    'PACK_ID': rec.get('PACK_ID'),
-                    'CARD_DATE': rec.get('CARD_DATE'),
-                })
                 break
+        
+        # If no image found, url is None. The template might handle it or we skip?
+        # The original code only appended if image exists:
+        if url:
+            cards.append({
+                'url': url,
+                'CARD_ID': cid,
+                'status': rec['status'] or '',
+                'CARD_CHAIN': rec['chain'],
+                'CARD_NAME': rec['name'],
+                'CARD_THEME': rec['theme'],
+                'CARD_TYPE': rec['card_type'],
+                'CARD_COINS': rec['coins'],
+                'USD_AMMOUNT': rec['usd_amount'],
+                'PACK_ID': rec['pack_id'],
+                'CARD_DATE': rec['card_date'],
+            })
     return cards
 
 # ROUTES
@@ -177,10 +136,11 @@ def table():
 @bp.route('/get_users')
 def get_users():
     try:
-        recs = load_records_from_csv()
+        recs = load_records_from_db()
         if not recs:
             return jsonify({'columns': [], 'records': []})
-        return jsonify({'columns': list(recs[0].keys()), 'records': recs})
+        # recs is list of sqlite3.Row
+        return jsonify({'columns': list(recs[0].keys()), 'records': [dict(r) for r in recs]})
     except Exception as e:
         return jsonify({'columns': [], 'records': [], 'error': str(e)}), 500
 
@@ -194,13 +154,18 @@ def api_cards():
 @bp.route('/card/<path:key>')
 def serve_card_page(key):
     suffix = f'/card/{key}'
-    match = next(
-        (r for r in load_records_from_csv() if r.get('CARD_URL','').endswith(suffix)),
-        None
-    )
-    if not match or match.get('CARD_OWNER') != 'SYSTEM':
+    # We don't store CARD_URL in the same way potentially, or we do.
+    # The CSV had CARD_URL. The DB has card_url.
+    # The logic in migration was: row.get('CARD_URL', '') -> card_url
+    
+    # We need to find a card where card_url ends with suffix
+    # SQLite LIKE can do this: '%/card/{key}'
+    
+    match = query_db("SELECT * FROM cards WHERE card_url LIKE ?", [f'%{suffix}'], one=True)
+
+    if not match or match['owner'] != 'SYSTEM':
         abort(404)
-    cid = match.get('CARD_ID','')
+    cid = match['card_id']
     url = None
     for ext in ['.png','.jpg','.jpeg']:
         fname = f'{cid}{ext}'
@@ -226,6 +191,44 @@ def run_create_cards():
         )
         return jsonify({'status': 'success'})
     except subprocess.CalledProcessError as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@bp.route('/activate_card', methods=['POST'])
+def activate_card():
+    user = session.get('user')
+    if not user:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+    
+    data = request.get_json()
+    card_id = data.get('card_id')
+    
+    if not card_id:
+        return jsonify({'status': 'error', 'message': 'Missing card_id'}), 400
+
+    # Verify ownership and current status
+    # We only activate if it's currently in STATUS_2 (Owned but not active)
+    # Or maybe we allow it from STATUS_1 if they own it? Usually STATUS_2 implies ownership.
+    # Let's check DB.
+    
+    row = query_db('SELECT * FROM cards WHERE card_id = ?', [card_id], one=True)
+    if not row:
+        return jsonify({'status': 'error', 'message': 'Card not found'}), 404
+        
+    if row['owner'] != user['username']:
+        return jsonify({'status': 'error', 'message': 'Not your card'}), 403
+        
+    # Check if already active
+    if row['status'] == 'STATUS_3':
+        return jsonify({'status': 'success', 'message': 'Already active', 'new_status': 'STATUS_3'})
+        
+    # Update to STATUS_3
+    # Use direct DB execution
+    try:
+        db = get_db()
+        db.execute("UPDATE cards SET status = 'STATUS_3' WHERE card_id = ?", (card_id,))
+        db.commit()
+        return jsonify({'status': 'success', 'new_status': 'STATUS_3'})
+    except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @bp.errorhandler(404)

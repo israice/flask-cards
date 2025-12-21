@@ -60,62 +60,44 @@ def generate_random_values(count,
     return values
 
 
-def patch_csv(path):
+import sys
+# Adjust path to import core
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+from core.database import query_db, update_card
+
+def update_usd_amounts(limit):
     """
-    Read CSV, skip SKIP_HEADER_ROWS header lines,
-    then find the first data row with an empty or missing cell in TARGET_COLUMN_INDEX,
-    and begin patching subsequent rows (up to MAX_ROWS_TO_SERVE).
-    Returns tuple (patched_rows, patched_count).
+    Find cards with coins but empty USD amount, and generate values.
     """
-    patched_rows = []
-    patched_count = 0
-    start_patching = False
-
-    with open(path, newline='', encoding=FILE_ENCODING) as infile:
-        reader = csv.reader(infile)
-        for idx, row in enumerate(reader):
-            # Always copy header rows without processing
-            if idx < SKIP_HEADER_ROWS:
-                patched_rows.append(row)
-                continue
-
-            # Determine if we should start patching at this row
-            if not start_patching:
-                if len(row) <= TARGET_COLUMN_INDEX or not row[TARGET_COLUMN_INDEX].strip():
-                    start_patching = True
-                else:
-                    patched_rows.append(row)
-                    continue
-
-            # Once patching started, apply to up to MAX_ROWS_TO_SERVE rows
-            if start_patching and patched_count < MAX_ROWS_TO_SERVE:
-                if len(row) > COIN_COLUMN_INDEX and row[COIN_COLUMN_INDEX].strip():
-                    coins = [c.strip() for c in row[COIN_COLUMN_INDEX].split(',') if c.strip()]
-                    if coins and (len(row) <= TARGET_COLUMN_INDEX or not row[TARGET_COLUMN_INDEX].strip()):
-                        values = generate_random_values(len(coins))
-                        values_str = ", ".join(f"{v:.2f}" for v in values)
-                        if len(row) <= TARGET_COLUMN_INDEX:
-                            row.insert(TARGET_COLUMN_INDEX, values_str)
-                        else:
-                            row[TARGET_COLUMN_INDEX] = values_str
-                        patched_count += 1
-
-            patched_rows.append(row)
-
-    return patched_rows, patched_count
-
-
-def write_csv(path, rows):
-    """Write modified rows back to the CSV file."""
-    with open(path, 'w', newline='', encoding=FILE_ENCODING) as outfile:
-        writer = csv.writer(outfile)
-        writer.writerows(rows)
-
+    # Fetch cards that need update
+    # Logic from original: if coins exist and usd_amount empty.
+    rows = query_db("SELECT card_id, coins FROM cards WHERE (usd_amount IS NULL OR usd_amount = '') AND (coins IS NOT NULL AND coins != '')")
+    
+    count = 0
+    for row in rows:
+        if count >= limit:
+            break
+            
+        coins_str = row['coins']
+        if not coins_str.strip():
+            continue
+            
+        coins = [c.strip() for c in coins_str.split(',') if c.strip()]
+        if not coins:
+            continue
+            
+        values = generate_random_values(len(coins))
+        values_str = ", ".join(f"{v:.2f}" for v in values)
+        
+        update_card(row['card_id'], 'usd_amount', values_str)
+        count += 1
+        
+    print(f"Updated {count} cards with USD amounts.")
 
 def main():
     """Main entry point."""
-    updated_rows, patched_count = patch_csv(SYSTEM_FULL_DB_CSV)
-    write_csv(SYSTEM_FULL_DB_CSV, updated_rows)
+    limit = MAX_ROWS_TO_SERVE
+    update_usd_amounts(limit)
 
 if __name__ == "__main__":
     main()

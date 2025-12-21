@@ -44,72 +44,40 @@ def load_coin_symbols(json_path):
     return [item['symbol'].upper() for item in data]
 
 
-def patch_csv(csv_path, symbols):
+import sys
+# Adjust path to import core
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+from core.database import query_db, update_card
+
+def update_coins(symbols, limit):
     """
-    Read entire CSV, find free cells from bottom (excluding header),
-    insert coin list into matching rows, and return new lines.
+    Find cards with description but empty coins, and insert random coins.
     """
-    # Read all lines
-    with open(csv_path, 'r', encoding=FILE_ENCODING) as f:
-        raw_lines = [line.rstrip('\n') for line in f]
-
-    if not raw_lines:
-        return []
-
-    # Separate header and data rows
-    header, data_rows = raw_lines[0], raw_lines[1:]
-    patched_count = 0
-
-    # Prepare a mutable list for patched data
-    patched_data = data_rows.copy()
-
-    # Iterate from bottom to top over data_rows
-    for idx in range(len(data_rows)-1, -1, -1):
-        if patched_count >= MAX_PATCHES:
+    # Logic: if description exists and coins empty.
+    rows = query_db("SELECT card_id FROM cards WHERE (coins IS NULL OR coins = '') AND (description IS NOT NULL AND description != '')")
+    
+    count = 0
+    for row in rows:
+        if count >= limit:
             break
-
-        line = data_rows[idx]
-        parts = line.split(CSV_SEPARATOR)
-
-        # Check criteria: enough columns (at least up to Owner), left column non-empty, not already patched
-        if (len(parts) >= TARGET_COLUMN_INDEX
-            and parts[TARGET_COLUMN_INDEX-1].strip()
-            and QUOTE_CHAR not in line):
-
-            # Ensure parts has enough elements up to TARGET_COLUMN_INDEX (Desc column at index 5)
-            # We need parts[0..5] to exist.
-            while len(parts) <= TARGET_COLUMN_INDEX:
-                parts.append('')
-
-            # Choose random coins
-            count = random.randint(MIN_COINS_COUNT, MAX_COINS_COUNT)
-            coins_list = random.sample(symbols, count)
-            coins_str = ", ".join(coins_list)
-
-            # Build new line with quoted coins list right after target column
-            new_line = CSV_SEPARATOR.join(
-                parts[:TARGET_COLUMN_INDEX+1] + [f'{QUOTE_CHAR}{coins_str}{QUOTE_CHAR}']
-            )
-            # Replace in patched_data at same relative position
-            patched_data[idx] = new_line
-
-            patched_count += 1
-
-    # Reconstruct full lines: header + patched data rows
-    return [header] + patched_data
-
-
-def write_csv(csv_path, lines):
-    """Write patched lines back to the CSV file."""
-    with open(csv_path, 'w', encoding=FILE_ENCODING) as f:
-        f.write("\n".join(lines) + "\n")
-
+            
+        card_id = row['card_id']
+        
+        # Choose random coins
+        num_coins = random.randint(MIN_COINS_COUNT, MAX_COINS_COUNT)
+        coins_list = random.sample(symbols, num_coins)
+        coins_str = ", ".join(coins_list)
+        
+        update_card(card_id, 'coins', coins_str)
+        count += 1
+        
+    print(f"Updated {count} cards with coins.")
 
 def main():
     """Main entry point."""
     symbols = load_coin_symbols(COINS_DB_JSON)
-    new_lines = patch_csv(SYSTEM_FULL_DB_CSV, symbols)
-    write_csv(SYSTEM_FULL_DB_CSV, new_lines)
+    limit = MAX_PATCHES
+    update_coins(symbols, limit)
 
 
 if __name__ == "__main__":

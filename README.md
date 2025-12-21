@@ -245,6 +245,7 @@ ADMIN page
 - checking auto update on ubuntu server side from github webhook
 - fixed user as admin if in whitelist
 - added new card design and DEBUG to console 
+- added button on USD area for USD view and STATUS_3
 
 
 
@@ -320,7 +321,7 @@ docker compose -f docker-compose.prod.yml logs --tail=20
 ### Quick github update
 
 git add .
-git commit -m "v1.008 - added new card design and DEBUG to console"
+git commit -m "v1.008 - added button on USD area for USD view and STATUS_3"
 git push
 
 </details>
